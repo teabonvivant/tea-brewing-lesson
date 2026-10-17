@@ -133,20 +133,22 @@
   }
   function pitcherPour(c, t0, i, dur, from, to, cupFrom, cupTo) {
     const r = 48, a = aimPitcher(cupTop(i), r, 44);
-    c.key("px", t0, c.lastPx || 0).key("py", t0, c.lastPy || 0).key("pr", t0, 0)
-      .key("px", t0 + 0.6, a.x).key("py", t0 + 0.6, a.y).key("pr", t0 + 0.6, 10)
-      .key("pr", t0 + 0.9, r).key("pr", t0 + 0.9 + dur, r + 6).key("pr", t0 + 1.2 + dur, 0)
+    c.key("px", t0, c.lastPx || 0).key("py", t0, c.lastPy || 0).key("pr", t0, c.lastPr || 0)
+      .key("px", t0 + 0.6, a.x).key("py", t0 + 0.6, a.y).key("pr", t0 + 0.6, 22)
+      .key("pr", t0 + 0.9, r).key("pr", t0 + 0.9 + dur, r + 6).key("pr", t0 + 1.2 + dur, 22)
+      .key("px", t0 + 0.9 + dur, a.x).key("py", t0 + 0.9 + dur, a.y).key("py", t0 + 1.2 + dur, a.y - 34)
       .key("pTarget", t0, i)
       .hold("sP", t0, t0 + 0.85, 0).key("sP", t0 + 1.0, 1).key("sP", t0 + 0.85 + dur, 1).key("sP", t0 + 1.0 + dur, 0)
       .key("pLevel", t0 + 0.9, from).key("pLevel", t0 + 0.9 + dur, to)
       .key("c" + i, t0 + 0.95, cupFrom).key("c" + i, t0 + 0.95 + dur, cupTo);
-    c.lastPx = a.x; c.lastPy = a.y;
+    c.lastPx = a.x; c.lastPy = a.y - 34; c.lastPr = 22;
     return t0 + 1.2 + dur;
   }
   function pitcherHome(c, t0) {
-    c.key("px", t0, c.lastPx || 0).key("py", t0, c.lastPy || 0).key("px", t0 + 0.7, 0).key("py", t0 + 0.7, 0);
-    c.lastPx = 0; c.lastPy = 0;
-    return t0 + 0.7;
+    c.key("px", t0, c.lastPx || 0).key("py", t0, c.lastPy || 0).key("pr", t0, c.lastPr || 0)
+      .key("pr", t0 + 0.4, 0).key("px", t0 + 0.8, 0).key("py", t0 + 0.8, 0);
+    c.lastPx = 0; c.lastPy = 0; c.lastPr = 0;
+    return t0 + 0.8;
   }
 
   /* ---------- 各步動畫 ---------- */
