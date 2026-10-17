@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="zh-Hant-HK">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>茶席・中國茶藝泡茶流程教學</title>
+<meta name="description" content="由溫杯、賞茶、投茶到奉茶品茗，逐步演示中國茶藝泡茶流程；附八種茶的泡法、水溫、茶性、適合人群及歷史，以及常用沖泡技巧。">
+<meta property="og:title" content="茶席・中國茶藝泡茶流程教學">
+<meta property="og:description" content="逐步演示泡茶流程，認識八種茶的泡法、水溫、茶性與歷史。">
+<meta property="og:image" content="assets/img/og.jpg">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#2b241e">
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%238d2f22'/%3E%3Cpath d='M18 30h28c-1 10-6 16-14 16s-13-6-14-16zM46 33c6 0 6 8-1 8M24 50h16' fill='none' stroke='%23fbeee0' stroke-width='3.5' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preload" href="assets/fonts/tea-serif.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" as="image" href="assets/img/scene/greet-960.webp" imagesrcset="assets/img/scene/greet-960.webp 960w, assets/img/scene/greet-1536.webp 1536w" imagesizes="(min-width: 1080px) 60vw, 100vw">
+<link rel="stylesheet" href="assets/css/app.css">
+</head>
+<body>
+<a class="skip" href="#demo">跳到示範</a>
+<header class="top">
+  <div class="top-in">
+    <a class="brand" href="#demo">
+      <span class="brand-seal" aria-hidden="true">茶</span>
+      <span class="brand-text"><b>茶席</b><small>中國茶藝泡茶流程教學</small></span>
+    </a>
+    <nav class="top-nav" aria-label="章節">
+      <a href="#demo">示範</a><a href="#teas">茶類</a><a href="#skills">技巧</a><a href="#water">水溫</a><a href="#tools">茶具</a><a href="#quiz">測驗</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section id="demo" class="demo" aria-labelledby="demo-title">
+    <div class="wrap">
+      <div class="demo-head">
+        <div>
+          <p class="eyebrow">泡茶流程示範</p>
+          <h1 id="demo-title">一席茶，由溫杯到回甘</h1>
+        </div>
+        <p class="lede">先揀一款茶，再跟着茶藝師逐步學。每一步都有手法特寫、要點和常見錯誤，參數會按所選的茶自動調整。</p>
+      </div>
+
+      <div class="tea-picker" role="radiogroup" aria-label="選擇茶類" id="teaPicker"></div>
+
+      <div class="theatre">
+        <div class="main-col">
+        <figure class="scene" id="scene">
+          <img class="scene-img is-on" id="sceneA" alt="" width="1536" height="1024" src="assets/img/scene/greet-960.webp" srcset="assets/img/scene/greet-960.webp 960w, assets/img/scene/greet-1536.webp 1536w" sizes="(min-width: 1080px) 60vw, 100vw" fetchpriority="high">
+          <img class="scene-img" id="sceneB" alt="" width="1536" height="1024" aria-hidden="true">
+          <figcaption class="scene-cap"><span class="scene-no" id="sceneNo">01</span><span id="sceneName">備具迎客</span></figcaption>
+        </figure>
+      <div class="controls" role="group" aria-label="播放控制">
+        <button class="ctl" id="prevBtn" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>上一步</span></button>
+        <button class="ctl ctl-main" id="playBtn" type="button" aria-label="播放"><svg viewBox="0 0 24 24" aria-hidden="true" id="playIcon"><path d="M8 5v14l11-7z" fill="currentColor"/></svg><span id="playText">播放</span></button>
+        <button class="ctl" id="nextBtn" type="button"><span>下一步</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <label class="auto"><input type="checkbox" id="autoBtn"><span>自動連播全流程</span></label>
+      </div>
+
+      <ol class="steps" id="steps" aria-label="流程步驟"></ol>
+
+        </div>
+
+        <div class="side">
+          <div class="closeup">
+            <div class="closeup-head">
+              <span class="tag">手法特寫</span>
+              <div class="closeup-tools">
+                <button class="icon-btn" id="speedBtn" type="button" aria-label="1× 播放速度">1×</button>
+                <button class="icon-btn" id="replayBtn" type="button" aria-label="重播這一步">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.4-5.7M4 4v4.5h4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="stage-wrap"><svg class="stage" id="stage" viewBox="0 0 800 500" role="img" aria-label="泡茶手法特寫動畫"></svg><p class="cu-label" id="cuLabel" aria-live="polite"></p></div>
+            <div class="progress" aria-hidden="true"><span id="progressBar"></span></div>
+          </div>
+
+          <article class="step-card" id="stepCard" aria-live="polite">
+            <div class="step-top">
+              <span class="step-count" id="stepCount">第 1 步・共 11 步</span>
+              <h2 class="step-name" id="stepName">備具迎客</h2>
+            </div>
+            <p class="step-desc" id="stepDesc"></p>
+            <h3 class="mini-h">要點</h3>
+            <ul class="points" id="stepPoints"></ul>
+            <div class="mistake"><b>常見錯誤</b><span id="stepMistake"></span></div>
+            <div class="timer" id="timer" hidden>
+              <div class="timer-ring" aria-hidden="true"><svg viewBox="0 0 44 44"><circle cx="22" cy="22" r="19"/><circle id="timerArc" cx="22" cy="22" r="19"/></svg><span id="timerNum">10</span></div>
+              <div class="timer-body">
+                <b>泡茶計時器</b>
+                <div class="timer-row">
+                  <button class="mini-btn" id="infMinus" type="button" aria-label="上一泡">−</button>
+                  <span id="infLabel">第 1 泡</span>
+                  <button class="mini-btn" id="infPlus" type="button" aria-label="下一泡">＋</button>
+                  <button class="mini-btn primary" id="timerGo" type="button">開始</button>
+                </div>
+                <small id="timerNote"></small>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+
+      <dl class="params" id="params"></dl>
+    </div>
+  </section>
+
+  <section id="teas" class="sec" aria-labelledby="teas-title">
+    <div class="wrap">
+      <p class="eyebrow">茶類百科</p>
+      <h2 id="teas-title" class="sec-title">八種茶，八種性情</h2>
+      <p class="sec-lede">按發酵程度由輕到重排列。點選一款茶，看它的泡法、茶性、適合人群與歷史。</p>
+      <div class="tea-grid" id="teaGrid"></div>
+      <article class="tea-detail" id="teaDetail" aria-live="polite"></article>
+    </div>
+  </section>
+
+  <section id="skills" class="sec sec-alt" aria-labelledby="skills-title">
+    <div class="wrap">
+      <p class="eyebrow">常用技巧</p>
+      <h2 id="skills-title" class="sec-title">手上的功夫</h2>
+      <p class="sec-lede">泡茶的禮儀與技巧，大多同時照顧茶味和客人。每一項都可以播放特寫。</p>
+      <div class="skills">
+        <div class="skill-list" role="tablist" aria-label="技巧" id="skillList"></div>
+        <div class="skill-view">
+          <div class="closeup closeup-sm">
+            <div class="stage-wrap"><svg class="stage" id="stage2" viewBox="0 0 800 500" role="img" aria-label="技巧特寫動畫"></svg><p class="cu-label" id="cuLabel2"></p></div>
+            <button class="icon-btn float" id="skillReplay" type="button" aria-label="重播技巧動畫"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.4-5.7M4 4v4.5h4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          </div>
+          <div class="skill-body" id="skillBody" role="tabpanel" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="water" class="sec" aria-labelledby="water-title">
+    <div class="wrap">
+      <p class="eyebrow">水溫與用水</p>
+      <h2 id="water-title" class="sec-title">水為茶之母</h2>
+      <p class="sec-lede">一般原則：茶越嫩、發酵越輕，水溫越低；越粗老、發酵或焙火越重，水溫越高。</p>
+      <div class="water">
+        <div class="temp-chart" id="tempChart" role="img" aria-label="各茶類建議水溫"></div>
+        <div class="water-notes" id="waterNotes"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="tools" class="sec sec-alt" aria-labelledby="tools-title">
+    <div class="wrap">
+      <p class="eyebrow">認識茶具</p>
+      <h2 id="tools-title" class="sec-title">茶席上的器物</h2>
+      <div class="tool-grid" id="toolGrid"></div>
+    </div>
+  </section>
+
+  <section id="quiz" class="sec" aria-labelledby="quiz-title">
+    <div class="wrap narrow">
+      <p class="eyebrow">小測驗</p>
+      <h2 id="quiz-title" class="sec-title">學完，考考自己</h2>
+      <div class="quiz" id="quizBox"></div>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <p class="foot-brand">香港古樹茶文化學會・茶藝教學</p>
+    <p class="foot-note">本教材的沖泡參數為家用及教學參考值，可按茶葉、器皿及個人口味調整。茶性、保健內容屬茶文化及一般飲食知識，不能代替醫療意見；孕婦、正在服藥或有腸胃、睡眠、心血管問題的人士，飲茶前請先諮詢醫生。</p>
+  </div>
+</footer>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/stage.js"></script>
+<script src="assets/js/app.js"></script>
+</body>
+</html>
