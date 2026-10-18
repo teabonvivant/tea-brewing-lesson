@@ -14,7 +14,7 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%238d2f22'/%3E%3Cpath d='M18 30h28c-1 10-6 16-14 16s-13-6-14-16zM46 33c6 0 6 8-1 8M24 50h16' fill='none' stroke='%23fbeee0' stroke-width='3.5' stroke-linecap='round'/%3E%3C/svg%3E">
 <link rel="preload" href="assets/fonts/tea-serif.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" as="image" href="assets/img/scene/greet-960.webp" imagesrcset="assets/img/scene/greet-960.webp 960w, assets/img/scene/greet-1536.webp 1536w" imagesizes="(min-width: 1080px) 60vw, 100vw">
-<link rel="stylesheet" href="assets/css/app.css">
+<link rel="stylesheet" href="assets/css/app.css?v=20261018">
 </head>
 <body>
 <a class="skip" href="#demo">跳到示範</a>
@@ -66,6 +66,16 @@
             <div class="closeup-head">
               <span class="tag">手法特寫</span>
               <div class="closeup-tools">
+                <div class="seg" role="group" aria-label="畫面風格">
+                  <button type="button" id="styleR" aria-pressed="true">寫實</button>
+                  <button type="button" id="styleI" aria-pressed="false">繪本</button>
+                </div>
+                <button class="icon-btn" id="sfxBtn" type="button" aria-pressed="false" aria-label="音效：關">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5z" fill="currentColor"/><path class="on-only" d="M15.5 9a4.2 4.2 0 0 1 0 6M18 6.6a7.6 7.6 0 0 1 0 10.8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path class="off-only" d="M15.5 9.5l5 5m0-5l-5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                </button>
+                <button class="icon-btn" id="musicBtn" type="button" aria-pressed="false" aria-label="背景音樂：關">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 17.5V6.5l9-2v11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="7" cy="17.5" r="2.3" fill="currentColor"/><circle cx="16" cy="15.5" r="2.3" fill="currentColor"/><path class="off-only" d="M3.5 3.5l17 17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                </button>
                 <button class="icon-btn" id="speedBtn" type="button" aria-label="1× 播放速度">1×</button>
                 <button class="icon-btn" id="replayBtn" type="button" aria-label="重播這一步">
                   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.4-5.7M4 4v4.5h4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -170,8 +180,10 @@
   </div>
 </footer>
 
-<script src="assets/js/data.js"></script>
-<script src="assets/js/stage.js"></script>
-<script src="assets/js/app.js"></script>
+<script src="assets/js/data.js?v=20261018"></script>
+<script src="assets/js/kit.js?v=20261018"></script>
+<script src="assets/js/audio.js?v=20261018"></script>
+<script src="assets/js/stage.js?v=20261018"></script>
+<script src="assets/js/app.js?v=20261018"></script>
 </body>
 </html>

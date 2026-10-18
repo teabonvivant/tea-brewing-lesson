@@ -1,21 +1,22 @@
 /* 茶席特寫動畫：以 SVG 繪畫茶具，按關鍵幀時間軸演示每一步手法。 */
 (function () {
   const NS = "http://www.w3.org/2000/svg";
+  /* 器具擺位（舞台座標 800×500，原點為各器具底部中心）；L 為按單品圖錨點計算出的相對位置，見 applyKit()。 */
   const HOME = {
-    kettle: { x: 112, y: 366 },
-    caddy: { x: 214, y: 402 },
-    gaiwan: { x: 330, y: 404 },
-    glass: { x: 470, y: 404 },
-    towel: { x: 716, y: 448 },
-    pitcher: { x: 498, y: 404 },
-    cups: [{ x: 612, y: 444 }, { x: 682, y: 444 }, { x: 752, y: 444 }],
-    chahe: { x: 196, y: 470 }
+    kettle: { x: 104, y: 402 },
+    caddy: { x: 196, y: 452 },
+    gaiwan: { x: 404, y: 356 },
+    glass: { x: 450, y: 356 },
+    towel: { x: 668, y: 362 },
+    pitcher: { x: 530, y: 352 },
+    cups: [{ x: 634, y: 358 }, { x: 698, y: 360 }, { x: 760, y: 362 }],
+    chahe: { x: 296, y: 360 }
   };
   const L = {
     kettleTip: { x: 93, y: -80 }, kettlePivot: { x: 0, y: -52 },
     gaiwanLip: { x: 58, y: -68 }, gaiwanRim: -68,
     pitcherTip: { x: 47, y: -106 }, pitcherTop: -100,
-    cupRim: -34, glassTop: -130, chaheTip: { x: 50, y: -4 }
+    cupRim: -34, glassTop: -130, glassFloor: -4, glassH: 124, chaheTip: { x: 50, y: -4 }
   };
   const WATER = "#dfeef3";
 
@@ -101,9 +102,9 @@
     const tip = rot(L.pitcherTip, L.pitcherTip, r);
     return { x: target.x - 6 - (HOME.pitcher.x + tip.x), y: target.y - h - (HOME.pitcher.y + tip.y) };
   }
-  const gaiwanTop = () => ({ x: HOME.gaiwan.x, y: HOME.gaiwan.y + L.gaiwanRim });
-  const glassTop = () => ({ x: HOME.glass.x, y: HOME.glass.y + L.glassTop });
-  const pitcherTop = () => ({ x: HOME.pitcher.x, y: HOME.pitcher.y + L.pitcherTop });
+  const gaiwanTop = () => ({ x: HOME.gaiwan.x + L.gaiwanRimX, y: HOME.gaiwan.y + L.gaiwanRim });
+  const glassTop = () => ({ x: HOME.glass.x + L.glassRimX, y: HOME.glass.y + L.glassTop });
+  const pitcherTop = () => ({ x: HOME.pitcher.x + L.pitcherRimX, y: HOME.pitcher.y + L.pitcherTop });
   const cupTop = (i) => ({ x: HOME.cups[i].x, y: HOME.cups[i].y + L.cupRim });
 
   function kettlePour(c, t0, target, o) {
@@ -163,13 +164,13 @@
       pour: { gLeaves: 1, gLevel: 1, gTint: 1, lid: 1 },
       share: { gLeaves: 1, pLevel: 0.82 },
       serve: glass ? { wLeaves: 1, wLevel: 0.72, wTint: 1, dance: 1 } : { gLeaves: 1, pLevel: 0.12, c0: 0.7, c1: 0.7, c2: 0.7 },
-      taste: glass ? { wLeaves: 1, wLevel: 0.72, wTint: 1, wx: -10, wy: 52, ws: 1.35, dance: 1 } : { gLeaves: 1, pLevel: 0.12, c0: 0.7, c1: 0.7, c2: 0.7, c1x: -282, c1y: 26, c1s: 1.9 },
+      taste: glass ? { wLeaves: 1, wLevel: 0.72, wTint: 1, wx: -10, wy: 52, ws: 1.35, dance: 1 } : { gLeaves: 1, pLevel: 0.12, c0: 0.7, c1: 0.7, c2: 0.7, c1x: -298, c1y: 62, c1s: 1.9 },
       again: glass ? { wLeaves: 1, wLevel: 0.3, wTint: 0.9, dance: 1 } : { gLeaves: 1, lid: 0 }
     };
     Object.assign(b, preset[id] || {});
     const c = new Clip(b);
     const gTarget = (lvl) => ({ x: gaiwanTop().x, y: gaiwanTop().y + (1 - lvl) * 10 });
-    const wTarget = (lvl) => ({ x: glassTop().x, y: HOME.glass.y - 4 - lvl * 124 });
+    const wTarget = (lvl) => ({ x: glassTop().x, y: HOME.glass.y + L.glassFloor - lvl * L.glassH });
 
     switch (id) {
       case "prepare":
@@ -285,7 +286,7 @@
           c.label(2.2, "請用茶").key("steamCup", 0, 0).key("steamCup", 2, 1);
         } else {
           c.label(0, "雙手托杯奉茶");
-          c.key("c1x", 0.3, 0).key("c1y", 0.3, 0).key("c1s", 0.3, 1).key("c1y", 1.0, -30).key("c1x", 2.2, -282).key("c1y", 2.2, 26).key("c1s", 2.2, 1.9);
+          c.key("c1x", 0.3, 0).key("c1y", 0.3, 0).key("c1s", 0.3, 1).key("c1y", 1.0, -30).key("c1x", 2.2, -298).key("c1y", 2.2, 62).key("c1s", 2.2, 1.9);
           c.label(2.4, "放在客人右手邊：「請用茶」").key("steamCup", 0, 0).key("steamCup", 2.2, 1);
           c.label(4.0, "客人以「叩指禮」回禮");
         }
@@ -357,182 +358,319 @@
     return c.finish();
   }
 
+  /* ---------- 單品圖版面 ---------- */
+  const KIT = window.TEA_KIT;
+  const IMG = "assets/img/kit/";
+  const PARTS = ["bowl", "saucer", "lid", "cup", "caddy", "kettle", "stove", "chahe", "towel", "pitcher", "tumbler"];
+  const WET = ["wet-00", "wet-01", "wet-02", "wet-03", "wet-04", "wet-05", "wet-06", "wet-07", "wet-08", "wet-09", "wet-10", "wet-11"];
+  const TEA_IDS = ["green", "white", "yellow", "oolong", "black", "shengpu", "shoupu", "jasmine"];
+
+  function imageList(style) {
+    return [IMG + style + "/bg.webp"].concat(PARTS.map((n) => `${IMG}${style}/${n}.webp`), WET.map((n) => `${IMG}${style}/${n}.webp`), TEA_IDS.map((n) => `${IMG}${style}/dry-${n}.webp`));
+  }
+  const loaded = {};
+  function preload(style) {
+    if (loaded[style]) return loaded[style];
+    loaded[style] = Promise.all(imageList(style).map((u) => new Promise((res) => {
+      const i = new Image();
+      i.onload = i.onerror = () => res();
+      i.src = u;
+    })));
+    return loaded[style];
+  }
+
+  /* 按單品圖尺寸與錨點，算出各器具圖片位置及動畫用的相對座標 */
+  function geometry(style) {
+    const A = KIT.A[style], S = KIT.sizes[style], W = KIT.W;
+    const g = {};
+    PARTS.forEach((n) => {
+      const [w, h] = S[n], s = W[n] / w, b = A[n].base || [0.5, 1];
+      g[n] = { s, w: w * s, h: h * s, x: -b[0] * w * s, y: -b[1] * h * s, a: A[n] };
+    });
+    const pt = (n, fx, fy, o = { x: 0, y: 0 }) => ({ x: g[n].x + fx * g[n].w + o.x, y: g[n].y + fy * g[n].h + o.y });
+    const q = { g, pt };
+    // 爐與煮水壺
+    const seat = pt("stove", ...A.stove.seat);
+    q.seat = seat;
+    q.stoveFrontY = g.stove.y + A.stove.front * g.stove.h;
+    q.kettleOff = { x: seat.x, y: seat.y };
+    q.kettleTip = pt("kettle", ...A.kettle.tip, seat);
+    q.kettlePivot = pt("kettle", ...A.kettle.pivot, seat);
+    // 蓋碗：碗坐在碟心
+    const well = pt("saucer", ...A.saucer.well);
+    q.bowlOff = { x: well.x, y: well.y + 2 };
+    const rim = A.bowl.rim, bw = g.bowl;
+    q.bowlRim = { cx: bw.x + rim[0] * bw.w + q.bowlOff.x, cy: bw.y + rim[1] * bw.h + q.bowlOff.y, rx: rim[2] * bw.w, ry: rim[3] * bw.h };
+    q.bowlLip = pt("bowl", ...A.bowl.lip, q.bowlOff);
+    q.lidOff = { x: -A.lid.seat[0] * g.lid.w, y: -A.lid.seat[1] * g.lid.h };
+    // 公道杯
+    const pr = A.pitcher.rim;
+    q.pRim = { cx: g.pitcher.x + pr[0] * g.pitcher.w, cy: g.pitcher.y + pr[1] * g.pitcher.h };
+    q.pTip = pt("pitcher", ...A.pitcher.tip);
+    q.pPoly = A.pitcher.poly.map(([fx, fy]) => pt("pitcher", fx, fy));
+    q.pTop = g.pitcher.y + A.pitcher.top * g.pitcher.h;
+    q.pFloor = g.pitcher.y + A.pitcher.floor * g.pitcher.h;
+    // 玻璃杯
+    const tr = A.tumbler.rim;
+    q.tRim = { cx: g.tumbler.x + tr[0] * g.tumbler.w, cy: g.tumbler.y + tr[1] * g.tumbler.h, rx: tr[2] * g.tumbler.w, ry: tr[3] * g.tumbler.h };
+    q.tPoly = A.tumbler.poly.map(([fx, fy]) => pt("tumbler", fx, fy));
+    q.tTop = g.tumbler.y + A.tumbler.top * g.tumbler.h;
+    q.tFloor = g.tumbler.y + A.tumbler.floor * g.tumbler.h;
+    // 品茗杯
+    const cr = A.cup.rim;
+    q.cRim = { cx: g.cup.x + cr[0] * g.cup.w, cy: g.cup.y + cr[1] * g.cup.h, rx: cr[2] * g.cup.w, ry: cr[3] * g.cup.h };
+    // 茶荷
+    q.chTip = pt("chahe", ...A.chahe.tip);
+    q.chPile = { x: g.chahe.x + A.chahe.pile[0] * g.chahe.w, y: g.chahe.y + A.chahe.pile[1] * g.chahe.h, w: A.chahe.pile[2] * g.chahe.w };
+    return q;
+  }
+
+  function applyKit(q, style) {
+    const o = KIT.home && KIT.home[style];
+    if (o) for (const k in o) { if (k === "cups") o.cups.forEach((c, i) => Object.assign(HOME.cups[i], c)); else Object.assign(HOME[k], o[k]); }
+    L.kettleTip = q.kettleTip; L.kettlePivot = q.kettlePivot;
+    L.gaiwanLip = q.bowlLip; L.gaiwanRim = q.bowlRim.cy; L.gaiwanRimX = q.bowlRim.cx;
+    L.pitcherTip = q.pTip; L.pitcherTop = q.pRim.cy; L.pitcherRimX = q.pRim.cx;
+    L.pFloor = q.pFloor; L.pH = q.pFloor - q.pTop;
+    L.cupRim = q.cRim.cy;
+    L.glassTop = q.tRim.cy; L.glassFloor = q.tFloor; L.glassH = q.tFloor - q.tTop; L.glassRimX = q.tRim.cx;
+    L.chaheTip = q.chTip;
+  }
+
   /* ---------- 繪畫 ---------- */
   const SVG_DEFS = `
   <defs>
-    <linearGradient id="tb-wall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#efe0c4"/><stop offset="1" stop-color="#d9bf97"/></linearGradient>
-    <radialGradient id="tb-glow" cx="0.72" cy="0.1" r="0.7"><stop offset="0" stop-color="#fff6dc" stop-opacity=".95"/><stop offset="1" stop-color="#fff6dc" stop-opacity="0"/></radialGradient>
-    <linearGradient id="tb-table" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7b4f33"/><stop offset=".25" stop-color="#5e3a25"/><stop offset="1" stop-color="#3d2416"/></linearGradient>
-    <linearGradient id="tb-tray" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8a5c3c"/><stop offset="1" stop-color="#6a432a"/></linearGradient>
-    <linearGradient id="tb-por" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#e4ddcf"/><stop offset=".35" stop-color="#fdfbf6"/><stop offset=".7" stop-color="#f4efe5"/><stop offset="1" stop-color="#d8cfbf"/></linearGradient>
-    <linearGradient id="tb-cel" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#cfdccd"/><stop offset="1" stop-color="#9fb7a3"/></linearGradient>
-    <linearGradient id="tb-cu" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#7a3b1c"/><stop offset=".38" stop-color="#d98d58"/><stop offset=".55" stop-color="#f0b483"/><stop offset="1" stop-color="#6e3417"/></linearGradient>
-    <linearGradient id="tb-iron" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#2a2522"/><stop offset=".5" stop-color="#4a423c"/><stop offset="1" stop-color="#221e1b"/></linearGradient>
-    <linearGradient id="tb-glaze" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#4b3326"/><stop offset=".45" stop-color="#8a6449"/><stop offset="1" stop-color="#3c281d"/></linearGradient>
-    <radialGradient id="tb-fire" cx=".5" cy=".7" r=".6"><stop offset="0" stop-color="#ffd27a"/><stop offset=".6" stop-color="#e46a24"/><stop offset="1" stop-color="#5a1d0a"/></radialGradient>
-    <radialGradient id="tb-sh"><stop offset="0" stop-color="#1d0f07" stop-opacity=".42"/><stop offset=".6" stop-color="#1d0f07" stop-opacity=".2"/><stop offset="1" stop-color="#1d0f07" stop-opacity="0"/></radialGradient>
-    <clipPath id="tb-gclip"><ellipse cx="0" cy="-68" rx="55" ry="10"/></clipPath>
-    <clipPath id="tb-pclip"><path d="M-31 -4 L-35 -95 L35 -95 L31 -4 Z"/></clipPath>
-    <clipPath id="tb-wclip"><path d="M-29 -5 L-33 -128 L33 -128 L29 -5 Z"/></clipPath>
-    <clipPath id="tb-cclip"><ellipse cx="0" cy="-34" rx="27" ry="5.4"/></clipPath>
+    <radialGradient id="tb-sh"><stop offset="0" stop-color="#0e0603" stop-opacity=".55"/><stop offset=".55" stop-color="#0e0603" stop-opacity=".26"/><stop offset="1" stop-color="#0e0603" stop-opacity="0"/></radialGradient>
+    <radialGradient id="tb-steam"><stop offset="0" stop-color="#fff" stop-opacity=".9"/><stop offset=".5" stop-color="#fff" stop-opacity=".35"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+    <radialGradient id="tb-vig" cx=".5" cy=".5" r=".75"><stop offset=".55" stop-color="#140a05" stop-opacity="0"/><stop offset="1" stop-color="#140a05" stop-opacity=".5"/></radialGradient>
+    <linearGradient id="tb-sun" x1="1" y1="0" x2="0" y2=".7"><stop offset="0" stop-color="#ffd9a0" stop-opacity=".22"/><stop offset=".6" stop-color="#ffd9a0" stop-opacity="0"/></linearGradient>
+    <linearGradient id="tb-lqdepth" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".22"/><stop offset=".35" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#220d00" stop-opacity=".3"/></linearGradient>
+    <radialGradient id="tb-lqhi" cx=".7" cy=".3" r=".6"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+    <radialGradient id="tb-ember" cx=".5" cy=".6" r=".6"><stop offset="0" stop-color="#ffb347" stop-opacity=".85"/><stop offset=".5" stop-color="#ff6a1f" stop-opacity=".35"/><stop offset="1" stop-color="#ff6a1f" stop-opacity="0"/></radialGradient>
   </defs>`;
 
-  const LEAF = "M0 -4 C4 -4 7 -1 8 0 C7 1 4 4 0 4 C-4 4 -7 1 -8 0 C-7 -1 -4 -4 0 -4Z";
+  function shadow(parent, rx, ry) { return el("ellipse", { cx: -rx * 0.1, cy: 1, rx: rx * 1.1, ry: ry || rx * 0.2, fill: "url(#tb-sh)" }, parent); }
 
-  function shadow(parent, rx) { return el("ellipse", { cx: 0, cy: 2, rx: rx * 1.15, ry: rx * 0.22, fill: "url(#tb-sh)" }, parent); }
+  let clipSeq = 0;
+  function clipPoly(defs, pts) {
+    const id = "tbc" + (++clipSeq);
+    const cp = el("clipPath", { id }, defs);
+    el("path", { d: "M" + pts.map((p) => `${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join("L") + "Z" }, cp);
+    return id;
+  }
+  function clipEllipse(defs, e) {
+    const id = "tbc" + (++clipSeq);
+    el("ellipse", { cx: e.cx, cy: e.cy, rx: e.rx, ry: e.ry }, el("clipPath", { id }, defs));
+    return id;
+  }
 
-  function buildScene(svg) {
+  function buildScene(svg, style) {
     svg.innerHTML = SVG_DEFS;
-    const R = {};
-    const root = el("g", {}, svg);
-    el("rect", { x: 0, y: 0, width: 800, height: 330, fill: "url(#tb-wall)" }, root);
-    const lat = el("g", { opacity: 0.16, stroke: "#6b4a2e", "stroke-width": 3, fill: "none" }, root);
-    for (let x = 430; x <= 790; x += 60) el("line", { x1: x, y1: 0, x2: x, y2: 300 }, lat);
-    for (let y = 30; y <= 300; y += 54) el("line", { x1: 400, y1: y, x2: 800, y2: y }, lat);
-    el("rect", { x: 0, y: 0, width: 800, height: 330, fill: "url(#tb-glow)" }, root);
-    el("rect", { x: 0, y: 300, width: 800, height: 200, fill: "url(#tb-table)" }, root);
-    el("rect", { x: 0, y: 300, width: 800, height: 3, fill: "#a3714b", opacity: 0.8 }, root);
-    const grain = el("g", { stroke: "#2c170c", "stroke-width": 1.2, fill: "none", opacity: 0.25 }, root);
-    [330, 352, 381, 418, 452, 480].forEach((y, i) => el("path", { d: `M0 ${y} C 200 ${y - 6 + i}, 420 ${y + 8}, 800 ${y - 3}` }, grain));
-    // 茶盤
-    const tray = el("g", {}, root);
-    el("path", { d: "M262 372 L790 372 L800 452 L252 452 Z", fill: "url(#tb-tray)" }, tray);
-    el("path", { d: "M252 452 L800 452 L800 462 L252 462 Z", fill: "#4a2c1a" }, tray);
-    for (let x = 282; x < 790; x += 26) el("line", { x1: x, y1: 376, x2: x - 2, y2: 448, stroke: "#4f3020", "stroke-width": 2.4, opacity: 0.55 }, tray);
-    R.layer = el("g", {}, root);
+    const q = geometry(style);
+    applyKit(q, style);
+    const g = q.g;
+    const defs = svg.querySelector("defs");
+    const R = { q, style, tick: 0 };
+    const href = (n) => `${IMG}${style}/${n}.webp`;
+    const img = (parent, n, dx = 0, dy = 0) => el("image", { href: href(n), x: g[n].x + dx, y: g[n].y + dy, width: g[n].w, height: g[n].h }, parent);
+    R.cam = el("g", {}, svg);
+    el("image", { href: href("bg"), x: 0, y: KIT.bg[style].y, width: 800, height: 533, preserveAspectRatio: "none" }, R.cam);
+    R.layer = el("g", {}, R.cam);
 
-    // 爐與壺
-    const stove = el("g", { transform: `translate(${HOME.kettle.x},${HOME.kettle.y})` }, R.layer);
-    shadow(stove, 62).setAttribute("transform", "translate(0,52)");
-    el("path", { d: "M-50 0 L50 0 L54 50 L-54 50 Z", fill: "url(#tb-iron)" }, stove);
-    el("rect", { x: -20, y: 16, width: 40, height: 24, rx: 5, fill: "url(#tb-fire)" }, stove);
-    el("ellipse", { cx: 0, cy: 0, rx: 50, ry: 8, fill: "#3a332e" }, stove);
+    // 爐＋煮水壺
+    R.stoveBack = el("g", { transform: `translate(${HOME.kettle.x},${HOME.kettle.y})` }, R.layer);
+    shadow(R.stoveBack, 58, 11);
+    img(R.stoveBack, "stove");
+    const st = g.stove;
+    R.ember = el("ellipse", { cx: 0, cy: st.y + st.h * 0.69, rx: st.w * 0.26, ry: st.h * 0.13, fill: "url(#tb-ember)", style: "mix-blend-mode:screen" }, R.stoveBack);
     R.kettle = el("g", {}, R.layer);
     const kt = el("g", {}, R.kettle);
-    el("path", { d: "M44 -24 C68 -32 80 -56 89 -82 L97 -79 C89 -50 76 -22 50 -10 Z", fill: "url(#tb-cu)" }, kt);
-    el("path", { d: "M-54 -10 C-64 -42 -48 -80 0 -82 C48 -80 64 -42 54 -10 C40 0 -40 0 -54 -10Z", fill: "url(#tb-cu)" }, kt);
-    const dots = el("g", { fill: "#ffd9b0", opacity: 0.35 }, kt);
-    [[-30, -50], [-12, -62], [10, -40], [26, -58], [-22, -28], [30, -30], [0, -20], [-38, -38]].forEach(([x, y]) => el("ellipse", { cx: x, cy: y, rx: 4, ry: 3 }, dots));
-    el("ellipse", { cx: 0, cy: -80, rx: 26, ry: 6, fill: "#8a4a26" }, kt);
-    el("ellipse", { cx: 0, cy: -88, rx: 7, ry: 6, fill: "#c27a48" }, kt);
-    el("path", { d: "M-34 -74 C-36 -128 36 -128 34 -74", fill: "none", stroke: "#3b2a1c", "stroke-width": 7, "stroke-linecap": "round" }, kt);
-    el("path", { d: "M-34 -74 C-36 -128 36 -128 34 -74", fill: "none", stroke: "#b48a5a", "stroke-width": 7, "stroke-dasharray": "3 4", opacity: 0.6 }, kt);
+    img(kt, "kettle", q.kettleOff.x, q.kettleOff.y);
+    R.stoveFront = el("g", { transform: `translate(${HOME.kettle.x},${HOME.kettle.y})` }, R.layer);
+    const frontClip = el("clipPath", { id: "tb-stf" }, defs);
+    el("rect", { x: st.x - 4, y: q.stoveFrontY, width: st.w + 8, height: st.h }, frontClip);
+    img(R.stoveFront, "stove").setAttribute("clip-path", "url(#tb-stf)");
     R.tempChip = el("g", {}, R.layer);
-    el("rect", { x: -70, y: -19, width: 140, height: 38, rx: 19, fill: "#2b211a", opacity: 0.86 }, R.tempChip);
-    R.tempText = el("text", { x: 0, y: 7, "text-anchor": "middle", "font-size": 19, fill: "#f6e7c8", class: "tb-svgtext" }, R.tempChip);
+    el("rect", { x: -64, y: -17, width: 128, height: 34, rx: 17, fill: "#241912", opacity: 0.78, stroke: "#e2b866", "stroke-opacity": 0.55 }, R.tempChip);
+    R.tempText = el("text", { x: 0, y: 6, "text-anchor": "middle", "font-size": 17, fill: "#f6e7c8", class: "tb-svgtext" }, R.tempChip);
 
-    // 茶巾
+    // 茶巾、茶罐
     R.towel = el("g", { transform: `translate(${HOME.towel.x},${HOME.towel.y})` }, R.layer);
-    shadow(R.towel, 44);
-    el("path", { d: "M-44 0 L-38 -22 L40 -22 L46 0 Z", fill: "#9b6f58" }, R.towel);
-    el("path", { d: "M-38 -22 L40 -22 L38 -26 L-36 -26 Z", fill: "#b48671" }, R.towel);
-    el("path", { d: "M-41 -11 L43 -11", stroke: "#7d5340", "stroke-width": 1.5 }, R.towel);
-
-    // 茶罐
-    const caddy = el("g", { transform: `translate(${HOME.caddy.x},${HOME.caddy.y})` }, R.layer);
-    shadow(caddy, 26);
-    el("path", { d: "M-20 0 L-22 -46 Q0 -52 22 -46 L20 0 Q0 5 -20 0Z", fill: "url(#tb-glaze)" }, caddy);
-    el("path", { d: "M-23 -46 Q0 -60 23 -46 Q0 -40 -23 -46Z", fill: "#5a3c2b" }, caddy);
-    el("circle", { cx: 0, cy: -55, r: 5, fill: "#3c281d" }, caddy);
-
-    // 公道杯
-    R.pitcher = el("g", {}, R.layer);
-    R.pitcherShadow = shadow(R.pitcher, 40);
-    R.pBody = el("g", {}, R.pitcher);
-    const pIn = el("g", { "clip-path": "url(#tb-pclip)" }, R.pBody);
-    R.pLiquid = el("rect", { x: -80, y: 0, width: 160, height: 200 }, pIn);
-    el("path", { d: "M-34 -4 L-38 -96 Q-38 -101 -30 -101 L32 -101 Q42 -102 47 -107 L46 -98 Q38 -93 38 -86 L34 -4 Q0 2 -34 -4Z", fill: "#ffffff", "fill-opacity": 0.14, stroke: "#ffffff", "stroke-opacity": 0.85, "stroke-width": 2.2 }, R.pBody);
-    el("path", { d: "M-37 -86 C-62 -84 -62 -40 -35 -34", fill: "none", stroke: "#ffffff", "stroke-opacity": 0.8, "stroke-width": 4 }, R.pBody);
-    el("path", { d: "M-24 -88 L-22 -14", stroke: "#fff", "stroke-opacity": 0.55, "stroke-width": 3, "stroke-linecap": "round" }, R.pBody);
+    shadow(R.towel, 46, 9); img(R.towel, "towel");
+    R.caddy = el("g", { transform: `translate(${HOME.caddy.x},${HOME.caddy.y})` }, R.layer);
+    shadow(R.caddy, 30, 6); img(R.caddy, "caddy");
 
     // 蓋碗
     R.saucer = el("g", {}, R.layer);
-    shadow(R.saucer, 62);
-    el("ellipse", { cx: 0, cy: -4, rx: 62, ry: 12, fill: "#e9e3d7" }, R.saucer);
-    el("ellipse", { cx: 0, cy: -7, rx: 54, ry: 9, fill: "#fbf8f2" }, R.saucer);
+    shadow(R.saucer, 56, 11); img(R.saucer, "saucer");
     R.gaiwan = el("g", {}, R.layer);
     R.gShadow = el("g", {}, R.gaiwan);
     R.gBowl = el("g", {}, R.gaiwan);
-    el("ellipse", { cx: 0, cy: -68, rx: 58, ry: 11, fill: "#d9d2c4" }, R.gBowl);
-    const gIn = el("g", { "clip-path": "url(#tb-gclip)" }, R.gBowl);
-    R.gLeaves = el("g", {}, gIn);
-    [[-14, -66, 20], [4, -70, -30], [16, -65, 50], [-4, -63, 80], [-22, -70, -60], [24, -70, 10], [8, -62, -10]].forEach(([x, y, r]) => el("path", { d: LEAF, transform: `translate(${x},${y}) rotate(${r}) scale(1.3)` }, R.gLeaves));
-    R.gLiquid = el("ellipse", { cx: 0, cy: -66, rx: 54, ry: 9 }, gIn);
-    el("path", { d: "M-30 -9 C-36 -20 -54 -50 -58 -68 C-40 -58 40 -58 58 -68 C54 -50 36 -20 30 -9 C14 -5 -14 -5 -30 -9Z", fill: "url(#tb-por)" }, R.gBowl);
-    el("path", { d: "M-46 -40 C-20 -32 20 -32 46 -40", fill: "none", stroke: "#8fb0b6", "stroke-width": 1.4, opacity: 0.6 }, R.gBowl);
-    el("path", { d: "M-58 -68 C-40 -58 40 -58 58 -68", fill: "none", stroke: "#fff", "stroke-width": 2 }, R.gBowl);
+    img(R.gBowl, "bowl", q.bowlOff.x, q.bowlOff.y);
+    const br = q.bowlRim;
+    const gClip = clipEllipse(defs, { cx: br.cx, cy: br.cy + 1, rx: br.rx * 0.97, ry: br.ry * 0.9 });
+    R.gIn = el("g", { "clip-path": `url(#${gClip})` }, R.gBowl);
+    R.gDry = el("image", { preserveAspectRatio: "xMidYMax meet", href: href("dry-green"), x: br.cx - br.rx * 0.62, y: br.cy + br.ry * 0.05, width: br.rx * 1.24, height: br.rx * 1.24 * 0.6 }, R.gIn);
+    R.gWet = el("g", {}, R.gIn);
+    R.gWetList = [[-0.42, 0.45, 20, 0.5], [-0.14, 0.62, -25, 0.55], [0.2, 0.5, 40, 0.5], [0.4, 0.62, -50, 0.5], [0.02, 0.4, 70, 0.55], [-0.3, 0.7, 100, 0.45], [0.28, 0.72, -10, 0.45]].map(([fx, fy, r, sc], i) => {
+      const n = WET[[4, 5, 6, 7, 0, 1, 8][i % 7]];
+      const w = KIT.sizes[style][n][0], h = KIT.sizes[style][n][1], k = (br.rx * 0.78 * sc) / Math.max(w, h) * 2;
+      const e = el("image", { href: href(n), width: w * k, height: h * k, x: -w * k / 2, y: -h * k / 2 }, R.gWet);
+      e.setAttribute("data-t", `${(br.cx + fx * br.rx).toFixed(1)},${(br.cy + fy * br.ry).toFixed(1)},${r}`);
+      return e;
+    });
+    R.gLiquid = el("ellipse", { cx: br.cx, cy: br.cy, rx: br.rx * 0.93, ry: br.ry * 0.82 }, R.gIn);
+    R.gLiquidDepth = el("ellipse", { cx: br.cx, cy: br.cy, rx: br.rx * 0.93, ry: br.ry * 0.82, fill: "url(#tb-lqdepth)" }, R.gIn);
+    R.gLiquidHi = el("ellipse", { cx: br.cx, cy: br.cy, rx: br.rx * 0.93, ry: br.ry * 0.82, fill: "url(#tb-lqhi)" }, R.gIn);
     R.lid = el("g", {}, R.gBowl);
-    el("path", { d: "M-55 0 C-50 -26 50 -26 55 0 C40 6 -40 6 -55 0Z", fill: "url(#tb-por)" }, R.lid);
-    el("path", { d: "M-40 -12 C-14 -6 14 -6 40 -12", fill: "none", stroke: "#8fb0b6", "stroke-width": 1.2, opacity: 0.55 }, R.lid);
-    el("path", { d: "M-7 -19 L-9 -28 L9 -28 L7 -19Z", fill: "#efe9de" }, R.lid);
-    el("ellipse", { cx: 0, cy: -28, rx: 12, ry: 4, fill: "#f8f4ec", stroke: "#d6cdbd" }, R.lid);
+    el("image", { href: href("lid"), x: q.lidOff.x, y: q.lidOff.y, width: g.lid.w, height: g.lid.h }, R.lid);
 
-    // 玻璃杯
+    // 玻璃杯（茶湯在玻璃後面，玻璃高光疊在上面）
     R.glass = el("g", {}, R.layer);
-    shadow(R.glass, 40);
-    const wIn = el("g", { "clip-path": "url(#tb-wclip)" }, R.glass);
-    R.wLiquid = el("rect", { x: -40, y: 0, width: 80, height: 0 }, wIn);
-    R.wSurface = el("ellipse", { cx: 0, cy: 0, rx: 32, ry: 5 }, wIn);
-    R.wLeaves = el("g", {}, wIn);
+    shadow(R.glass, 34, 7);
+    R.gBody = el("g", {}, R.glass);
+    const tClip = clipPoly(defs, q.tPoly);
+    R.wIn = el("g", { "clip-path": `url(#${tClip})` }, R.gBody);
+    const tb = { x0: Math.min(...q.tPoly.map((p) => p.x)), x1: Math.max(...q.tPoly.map((p) => p.x)) };
+    R.tb = tb;
+    R.wLiquid = el("rect", { x: tb.x0 - 2, y: 0, width: tb.x1 - tb.x0 + 4, height: 0 }, R.wIn);
+    R.wLiquidDepth = el("rect", { x: tb.x0 - 2, y: 0, width: tb.x1 - tb.x0 + 4, height: 0, fill: "url(#tb-lqdepth)" }, R.wIn);
+    R.wSurface = el("ellipse", { cx: 0, cy: 0, rx: (tb.x1 - tb.x0) / 2 * 0.96, ry: (tb.x1 - tb.x0) / 2 * 0.2, fill: "#fff", "fill-opacity": 0.16, stroke: "#fff", "stroke-opacity": 0.55, "stroke-width": 0.9 }, R.wIn);
+    R.wLeaves = el("g", {}, R.wIn);
     R.wLeafList = [];
-    for (let i = 0; i < 11; i++) R.wLeafList.push(el("path", { d: "M0 -9 C3 -6 3 6 0 9 C-3 6 -3 -6 0 -9Z" }, R.wLeaves));
-    el("path", { d: "M-32 -2 L-36 -130 L36 -130 L32 -2 Q0 4 -32 -2Z", fill: "#fff", "fill-opacity": 0.12, stroke: "#fff", "stroke-opacity": 0.85, "stroke-width": 2.2 }, R.glass);
-    el("ellipse", { cx: 0, cy: -130, rx: 36, ry: 7, fill: "none", stroke: "#fff", "stroke-opacity": 0.9, "stroke-width": 2 }, R.glass);
-    el("path", { d: "M-24 -118 L-22 -14", stroke: "#fff", "stroke-opacity": 0.5, "stroke-width": 3, "stroke-linecap": "round" }, R.glass);
+    for (let i = 0; i < 11; i++) {
+      const n = WET[[0, 1, 2, 3, 4, 5, 8, 9, 10, 11, 6][i]], w = KIT.sizes[style][n][0], h = KIT.sizes[style][n][1];
+      const k = (n === "wet-04" || n === "wet-05" || n === "wet-06" || n === "wet-07" ? 17 : n.startsWith("wet-0") && +n.slice(4) < 4 ? 20 : 15) / Math.max(w, h);
+      R.wLeafList.push(el("image", { href: href(n), width: w * k, height: h * k, x: -w * k / 2, y: -h * k / 2 }, R.wLeaves));
+    }
+    img(R.gBody, "tumbler");
+
+    // 公道杯
+    R.pitcher = el("g", {}, R.layer);
+    R.pitcherShadow = shadow(R.pitcher, 54, 10);
+    R.pBody = el("g", {}, R.pitcher);
+    const pClip = clipPoly(defs, q.pPoly);
+    const pIn = el("g", { "clip-path": `url(#${pClip})` }, R.pBody);
+    const px0 = Math.min(...q.pPoly.map((p) => p.x)), px1 = Math.max(...q.pPoly.map((p) => p.x));
+    R.pb = { x0: px0, x1: px1 };
+    R.pLiquid = el("rect", { x: px0 - 4, y: 0, width: px1 - px0 + 8, height: 200 }, pIn);
+    R.pLiquidDepth = el("rect", { x: px0 - 4, y: 0, width: px1 - px0 + 8, height: 200, fill: "url(#tb-lqdepth)" }, pIn);
+    R.pSurface = el("ellipse", { cx: (px0 + px1) / 2, cy: 0, rx: (px1 - px0) / 2 * 0.97, ry: (px1 - px0) / 2 * 0.17, fill: "#fff", "fill-opacity": 0.16, stroke: "#fff", "stroke-opacity": 0.55, "stroke-width": 0.9 }, pIn);
+    img(R.pBody, "pitcher");
 
     // 品茗杯
+    const cr = q.cRim;
     R.cups = HOME.cups.map(() => {
-      const g = el("g", {}, R.layer);
-      shadow(g, 30);
-      el("ellipse", { cx: 0, cy: -34, rx: 30, ry: 6, fill: "#d9d2c4" }, g);
-      const ci = el("g", { "clip-path": "url(#tb-cclip)" }, g);
-      const liq = el("ellipse", { cx: 0, cy: -34, rx: 27, ry: 5 }, ci);
-      el("path", { d: "M-18 -2 C-22 -10 -28 -24 -30 -34 C-18 -29 18 -29 30 -34 C28 -24 22 -10 18 -2 C8 1 -8 1 -18 -2Z", fill: "url(#tb-por)" }, g);
-      el("path", { d: "M-30 -34 C-18 -29 18 -29 30 -34", fill: "none", stroke: "#fff", "stroke-width": 1.6 }, g);
-      const steam = el("g", { class: "tb-steam" }, g);
-      [-8, 2, 11].forEach((x, i) => el("path", { d: `M${x} -44 c-6 -10 6 -18 0 -28 c-6 -10 6 -16 0 -26`, style: `animation-delay:${i * 0.7}s` }, steam));
-      return { g, liq, steam };
+      const gr = el("g", {}, R.layer);
+      shadow(gr, 30, 6);
+      img(gr, "cup");
+      const cid = clipEllipse(defs, { cx: cr.cx, cy: cr.cy + 0.5, rx: cr.rx * 0.97, ry: cr.ry * 0.9 });
+      const ci = el("g", { "clip-path": `url(#${cid})` }, gr);
+      const liq = el("ellipse", { cx: cr.cx, cy: cr.cy, rx: cr.rx * 0.9, ry: cr.ry * 0.82 }, ci);
+      const depth = el("ellipse", { cx: cr.cx, cy: cr.cy, rx: cr.rx * 0.9, ry: cr.ry * 0.82, fill: "url(#tb-lqdepth)" }, ci);
+      const hi = el("ellipse", { cx: cr.cx, cy: cr.cy, rx: cr.rx * 0.9, ry: cr.ry * 0.82, fill: "url(#tb-lqhi)" }, ci);
+      return { g: gr, liq, depth, hi };
     });
 
     // 茶荷
     R.chahe = el("g", {}, R.layer);
-    R.chaheShadow = shadow(R.chahe, 46);
+    R.chaheShadow = shadow(R.chahe, 44, 9);
     R.chaheBody = el("g", {}, R.chahe);
-    el("path", { d: "M-46 0 C-30 -14 30 -17 50 -4 C34 10 -26 13 -46 0Z", fill: "url(#tb-cel)", stroke: "#86a08a", "stroke-width": 1 }, R.chaheBody);
-    el("path", { d: "M-34 -1 C-18 -9 22 -10 38 -3", fill: "none", stroke: "#eef4ec", "stroke-width": 1.5, opacity: 0.8 }, R.chaheBody);
-    R.hLeaves = el("g", {}, R.chaheBody);
-    [[-20, -4, 10], [-8, -7, -40], [4, -4, 30], [16, -6, -20], [-12, -1, 70], [8, -9, 60], [24, -3, -60], [-2, -2, 0]].forEach(([x, y, r]) => el("path", { d: LEAF, transform: `translate(${x},${y}) rotate(${r}) scale(1.15,.8)` }, R.hLeaves));
+    img(R.chaheBody, "chahe");
+    const pw = q.chPile.w;
+    R.hPile = el("image", { preserveAspectRatio: "xMidYMax meet", href: href("dry-green"), x: q.chPile.x - pw / 2, y: q.chPile.y - pw * 0.30, width: pw, height: pw * 0.66 }, R.chaheBody);
 
-    // 水流、落葉、水滴
-    R.streams = el("g", { fill: "none", "stroke-linecap": "round" }, root);
-    const mkStream = (w) => ({ main: el("path", { "stroke-width": w }, R.streams), hi: el("path", { "stroke-width": Math.max(1, w * 0.3), stroke: "#fff", "stroke-opacity": 0.65, class: "tb-flow" }, R.streams) });
-    R.sK = mkStream(4.2); R.sG = mkStream(5); R.sP = mkStream(3.6);
-    R.fall = el("g", {}, root);
+    // 水流、落葉、水滴、水氣
+    R.streams = el("g", {}, R.cam);
+    const mk = () => ({ body: el("path", {}, R.streams), hi: el("path", { fill: "none", stroke: "#fff", "stroke-linecap": "round" }, R.streams) });
+    R.sK = mk(); R.sG = mk(); R.sP = mk();
+    R.fall = el("g", {}, R.cam);
     R.fallLeaves = [];
-    for (let i = 0; i < 7; i++) R.fallLeaves.push(el("path", { d: LEAF }, R.fall));
-    R.drop = el("ellipse", { rx: 2.6, ry: 3.4 }, root);
-    R.kSteam = el("g", { class: "tb-steam" }, root);
-    [0, 1, 2].forEach((i) => el("path", { d: `M${i * 6 - 6} 0 c-6 -12 6 -20 0 -32 c-6 -12 6 -18 0 -30`, style: `animation-delay:${i * 0.8}s` }, R.kSteam));
+    for (let i = 0; i < 6; i++) R.fallLeaves.push(el("image", { preserveAspectRatio: "xMidYMid meet", href: href("dry-green"), width: 16, height: 11 }, R.fall));
+    R.drop = el("ellipse", { rx: 2.3, ry: 3.2 }, R.cam);
+    R.fx = { ripples: [], splash: [], steam: [], last: 0, acc: {} };
+    R.fxLayer = el("g", { "pointer-events": "none" }, R.cam);
+    for (let i = 0; i < 6; i++) R.fx.ripples.push({ n: el("ellipse", { fill: "none", stroke: "#fff", "stroke-width": 1, opacity: 0 }, R.fxLayer), life: 0 });
+    for (let i = 0; i < 28; i++) R.fx.splash.push({ n: el("circle", { r: 1.3, fill: "#fff", opacity: 0 }, R.fxLayer), life: 0 });
+    for (let i = 0; i < 24; i++) R.fx.steam.push({ n: el("circle", { r: 8, fill: "url(#tb-steam)", opacity: 0 }, R.fxLayer), life: 0 });
 
-    // 計時與標籤
-    R.timer = el("g", {}, root);
-    el("circle", { r: 32, fill: "#2b211a", opacity: 0.86 }, R.timer);
-    el("circle", { r: 20, fill: "none", stroke: "#6d5a48", "stroke-width": 4 }, R.timer);
-    R.timerArc = el("circle", { r: 20, fill: "none", stroke: "#e2b866", "stroke-width": 4, "stroke-dasharray": "125.7", transform: "rotate(-90)", "stroke-linecap": "round" }, R.timer);
-    R.timerText = el("text", { y: 5, "text-anchor": "middle", "font-size": 15, fill: "#f6e7c8", class: "tb-svgtext" }, R.timer);
-    R.label = el("g", { transform: "translate(400,52)" }, root);
-    R.labelBg = el("rect", { x: -150, y: -26, width: 300, height: 52, rx: 26, fill: "#2b211a", opacity: 0.84 }, R.label);
+    // 計時
+    R.timer = el("g", {}, R.cam);
+    el("circle", { r: 30, fill: "#241912", opacity: 0.8 }, R.timer);
+    el("circle", { r: 19, fill: "none", stroke: "#6d5a48", "stroke-width": 4 }, R.timer);
+    R.timerArc = el("circle", { r: 19, fill: "none", stroke: "#e2b866", "stroke-width": 4, "stroke-dasharray": "119.4", transform: "rotate(-90)", "stroke-linecap": "round" }, R.timer);
+    R.timerText = el("text", { y: 5, "text-anchor": "middle", "font-size": 14, fill: "#f6e7c8", class: "tb-svgtext" }, R.timer);
+
+    // 光影與標籤（畫面固定，不隨鏡頭）
+    el("rect", { x: 0, y: 0, width: 800, height: 500, fill: "url(#tb-sun)", "pointer-events": "none" }, svg);
+    el("rect", { x: 0, y: 0, width: 800, height: 500, fill: "url(#tb-vig)", "pointer-events": "none" }, svg);
+    R.label = el("g", { transform: "translate(400,52)" }, svg);
+    R.labelBg = el("rect", { x: -150, y: -26, width: 300, height: 52, rx: 26, fill: "#241912", opacity: 0.84 }, R.label);
     R.labelText = el("text", { x: 0, y: 9, "text-anchor": "middle", "font-size": 25, fill: "#fbf1dc", class: "tb-svgtext" }, R.label);
-    [R.cups[0].g, R.cups[1].g, R.cups[2].g, R.pitcher, R.saucer, R.gaiwan, R.glass, R.chahe, R.kettle, R.tempChip].forEach((n) => R.layer.appendChild(n));
+    R.cam0 = { x: 400, y: 250, z: 1 };
+    R.camSet = false;
     return R;
   }
 
-  function streamPath(from, to, dir) {
-    const cx = from.x + dir.x * 18, cy = from.y + dir.y * 18;
-    return `M${from.x.toFixed(1)} ${from.y.toFixed(1)} Q${cx.toFixed(1)} ${cy.toFixed(1)} ${to.x.toFixed(1)} ${to.y.toFixed(1)}`;
+  /* 水流：兩端略收窄的帶狀多邊形＋高光線 */
+  function ribbon(S, on, a, b, dir, w0, col, now, hiOp) {
+    const vis = on > 0.02;
+    S.body.style.opacity = S.hi.style.opacity = vis ? Math.min(1, on) : 0;
+    if (!vis) return;
+    const c = { x: a.x + (b.x - a.x) * 0.62, y: a.y - 3 };
+    const N = 14, left = [], right = [], mid = [];
+    for (let i = 0; i <= N; i++) {
+      const t = i / N, u = 1 - t;
+      const x = u * u * a.x + 2 * u * t * c.x + t * t * b.x, y = u * u * a.y + 2 * u * t * c.y + t * t * b.y;
+      const tx = 2 * u * (c.x - a.x) + 2 * t * (b.x - c.x), ty = 2 * u * (c.y - a.y) + 2 * t * (b.y - c.y);
+      const m = Math.hypot(tx, ty) || 1, nx = -ty / m, ny = tx / m;
+      const w = w0 * (1 - 0.35 * t) * (1 + 0.1 * Math.sin(now / 70 + t * 11)) * Math.min(1, on * 1.4);
+      left.push([x + nx * w / 2, y + ny * w / 2]); right.push([x - nx * w / 2, y - ny * w / 2]); mid.push([x + nx * w * 0.14, y + ny * w * 0.14]);
+    }
+    const f = (p) => p[0].toFixed(1) + " " + p[1].toFixed(1);
+    S.body.setAttribute("d", "M" + left.map(f).join("L") + "L" + right.reverse().map(f).join("L") + "Z");
+    S.body.setAttribute("fill", col); S.body.style.fillOpacity = 0.6; S.body.setAttribute("stroke", "#fff"); S.body.setAttribute("stroke-opacity", 0.35); S.body.setAttribute("stroke-width", 0.5);
+    S.hi.setAttribute("d", "M" + mid.map(f).join("L"));
+    S.hi.setAttribute("stroke-width", Math.max(0.8, w0 * 0.22)); S.hi.style.strokeOpacity = hiOp || 0.7;
   }
 
-  function render(R, s, tea, now) {
+  /* ---------- 特效：水花、漣漪、水氣 ---------- */
+  function fxUpdate(R, now, dt, emit) {
+    const F = R.fx;
+    const spawn = (arr, init) => { const p = arr.find((x) => x.life <= 0); if (p) { p.life = 1; init(p); } };
+    emit.forEach((e) => {
+      F.acc[e.k] = (F.acc[e.k] || 0) + dt * e.rate;
+      while (F.acc[e.k] >= 1) {
+        F.acc[e.k] -= 1;
+        if (e.type === "steam") spawn(F.steam, (p) => { p.x = e.x + (Math.random() - 0.5) * e.spread; p.y = e.y; p.vx = (Math.random() - 0.5) * 6; p.vy = -(10 + Math.random() * 8) * e.lift; p.r0 = 4 + Math.random() * 3; p.a = e.alpha; p.dur = 2.2 + Math.random() * 1.2; p.t = 0; });
+        else if (e.type === "splash") spawn(F.splash, (p) => { p.x = e.x + (Math.random() - 0.5) * 5; p.y = e.y; p.vx = (Math.random() - 0.5) * 44; p.vy = -(26 + Math.random() * 46); p.dur = 0.55; p.t = 0; });
+        else if (e.type === "ripple") spawn(F.ripples, (p) => { p.x = e.x; p.y = e.y; p.w = e.w; p.dur = 1.0; p.t = 0; });
+      }
+    });
+    F.steam.forEach((p) => {
+      if (p.life <= 0) { p.n.style.opacity = 0; return; }
+      p.t += dt; const k = p.t / p.dur; if (k >= 1) { p.life = 0; p.n.style.opacity = 0; return; }
+      p.x += (p.vx + Math.sin(now / 520 + p.r0 * 3) * 5) * dt; p.y += p.vy * dt;
+      p.n.setAttribute("cx", p.x.toFixed(1)); p.n.setAttribute("cy", p.y.toFixed(1)); p.n.setAttribute("r", (p.r0 + k * 15).toFixed(1));
+      p.n.style.opacity = (Math.sin(Math.PI * Math.min(1, k * 1.25)) * p.a).toFixed(3);
+    });
+    F.splash.forEach((p) => {
+      if (p.life <= 0) { p.n.style.opacity = 0; return; }
+      p.t += dt; if (p.t >= p.dur) { p.life = 0; p.n.style.opacity = 0; return; }
+      p.vy += 260 * dt; p.x += p.vx * dt; p.y += p.vy * dt;
+      p.n.setAttribute("cx", p.x.toFixed(1)); p.n.setAttribute("cy", p.y.toFixed(1)); p.n.style.opacity = (0.85 * (1 - p.t / p.dur)).toFixed(2);
+    });
+    F.ripples.forEach((p) => {
+      if (p.life <= 0) { p.n.style.opacity = 0; return; }
+      p.t += dt; const k = p.t / p.dur; if (k >= 1) { p.life = 0; p.n.style.opacity = 0; return; }
+      const rx = 2 + p.w * k;
+      p.n.setAttribute("cx", p.x.toFixed(1)); p.n.setAttribute("cy", p.y.toFixed(1)); p.n.setAttribute("rx", rx.toFixed(1)); p.n.setAttribute("ry", (rx * 0.27).toFixed(1));
+      p.n.style.opacity = (0.7 * (1 - k)).toFixed(2);
+    });
+  }
+
+  function render(R, s, tea, now, dt, quiet) {
+    const q = R.q, g = q.g;
     const glass = s.mode === "glass";
     const teaCol = tea.liquor, deep = tea.liquorDeep;
     const tint = (k) => mixColor(WATER, teaCol, Math.max(0, Math.min(1, k)));
@@ -542,16 +680,29 @@
       node.style.opacity = k;
       return (1 - k) * 18;
     };
+    const emit = [];
+    if (R.teaId !== tea.id) {
+      R.teaId = tea.id;
+      const u = `${IMG}${R.style}/dry-${tea.id}.webp`;
+      [R.gDry, R.hPile].concat(R.fallLeaves).forEach((e) => e.setAttribute("href", u));
+    }
 
-    // 煮水壺
+    // 煮水壺與爐
     const kOff = appear(R.kettle, 0);
+    R.stoveBack.style.opacity = R.stoveFront.style.opacity = R.kettle.style.opacity;
     const kp = { x: HOME.kettle.x + s.kx, y: HOME.kettle.y + s.ky + kOff };
     R.kettle.setAttribute("transform", `translate(${kp.x},${kp.y}) rotate(${s.kr} ${L.kettlePivot.x} ${L.kettlePivot.y})`);
     const tipL = rot(L.kettleTip, L.kettlePivot, s.kr);
     const tip = { x: kp.x + tipL.x, y: kp.y + tipL.y };
-    R.kSteam.setAttribute("transform", `translate(${tip.x},${tip.y - 6})`);
-    R.kSteam.style.opacity = s.kr < 5 ? 0.9 * Math.min(1, show * 2) : 0;
-    R.tempChip.setAttribute("transform", `translate(${HOME.kettle.x},${HOME.kettle.y - 156})`);
+    const flick = 0.55 + 0.45 * Math.sin(now / 130) * Math.sin(now / 71 + 1.7);
+    R.ember.style.opacity = (0.65 + 0.35 * flick) * Math.min(1, show * 3);
+    const kFront = s.kr > 1 || Math.abs(s.kx) > 4;
+    if (R.kFront !== kFront) {
+      R.kFront = kFront;
+      if (kFront) R.layer.appendChild(R.kettle); else R.layer.insertBefore(R.kettle, R.stoveFront);
+    }
+    if (s.kr < 5 && show > 0.5) emit.push({ k: "kst", type: "steam", x: tip.x - 2, y: tip.y - 2, rate: 5, spread: 2, lift: 1.3, alpha: 0.5 });
+    R.tempChip.setAttribute("transform", `translate(${HOME.kettle.x + 28},${HOME.kettle.y + q.kettleOff.y + g.kettle.y - 12})`);
     R.tempChip.style.opacity = s.temp * Math.max(0, 1 - Math.abs(s.kx) / 40);
     R.tempText.textContent = tea.temp[0] === tea.temp[1] ? `水溫 ${tea.temp[0]}°C` : `水溫 ${tea.temp[0]}–${tea.temp[1]}°C`;
 
@@ -562,24 +713,32 @@
     R.glass.style.display = glass ? "" : "none";
     R.towel.style.display = glass ? "" : "none";
     appear(R.towel, 4);
+    appear(R.caddy, 1);
     const gOff = appear(R.gaiwan, 2);
-    const lip = L.gaiwanLip;
+    const lip = L.gaiwanLip, br = q.bowlRim;
     R.gaiwan.setAttribute("transform", `translate(${HOME.gaiwan.x + s.gx},${HOME.gaiwan.y + s.gy + gOff})`);
     R.saucer.setAttribute("transform", `translate(${HOME.gaiwan.x},${HOME.gaiwan.y + gOff})`);
     R.saucer.style.opacity = R.gaiwan.style.opacity;
     R.saucer.style.display = glass ? "none" : "";
     R.gBowl.setAttribute("transform", `rotate(${s.gr} ${lip.x} ${lip.y})`);
-    R.gShadow.style.opacity = Math.max(0, 1 - Math.abs(s.gy) / 40);
-    R.gLeaves.style.opacity = s.gLeaves;
-    R.gLeaves.setAttribute("fill", tea.leaf);
-    R.gLiquid.style.opacity = s.gLevel > 0.02 ? 0.92 : 0;
-    R.gLiquid.setAttribute("cy", -68 + (1 - s.gLevel) * 10);
-    R.gLiquid.setAttribute("rx", 54 * (0.78 + 0.22 * s.gLevel));
-    R.gLiquid.setAttribute("ry", 9 * (0.78 + 0.22 * s.gLevel));
+    // 蓋碗內：乾茶→濕葉→茶湯
+    const wetK = Math.max(0, Math.min(1, s.gLevel * 3 + s.gTint * 2));
+    R.gDry.style.opacity = s.gLeaves * (1 - wetK);
+    R.gWet.style.opacity = s.gLeaves * wetK;
+    R.gWet.style.filter = KIT.wetTint[tea.id];
+    R.gWetList.forEach((e, i) => {
+      const [x, y, r] = e.getAttribute("data-t").split(",").map(Number);
+      e.setAttribute("transform", `translate(${x},${y}) rotate(${r + Math.sin(now / 1400 + i) * 3 * wetK})`);
+    });
+    const lv = s.gLevel;
+    const gl = { cx: br.cx, cy: br.cy + (1 - lv) * br.ry * 0.9, rx: br.rx * 0.93 * (0.7 + 0.3 * lv), ry: br.ry * 0.82 * (0.7 + 0.3 * lv) };
+    [R.gLiquid, R.gLiquidDepth, R.gLiquidHi].forEach((e) => { e.setAttribute("cy", gl.cy); e.setAttribute("rx", gl.rx); e.setAttribute("ry", gl.ry); e.style.opacity = lv > 0.02 ? 1 : 0; });
+    R.gLiquid.style.opacity = lv > 0.02 ? 0.88 : 0;
     R.gLiquid.setAttribute("fill", tint(s.gTint));
-    const lidOff = { x: 70, y: -52, r: 72 };
     const lk = s.lid;
-    R.lid.setAttribute("transform", `translate(${lerp(lidOff.x, s.lidX, lk)},${lerp(lidOff.y, -66, lk)}) rotate(${lerp(lidOff.r, s.lidR, lk)})`);
+    const lidOn = { x: br.cx + s.lidX, y: br.cy - 1, r: s.lidR }, lidOff = { x: br.cx + br.rx + 20, y: -12, r: -58 };
+    R.lid.setAttribute("transform", `translate(${lerp(lidOff.x, lidOn.x, lk)},${lerp(lidOff.y, lidOn.y, lk)}) rotate(${lerp(lidOff.r, lidOn.r, lk)})`);
+    if (!glass && lk < 0.5 && lv > 0.15) emit.push({ k: "gst", type: "steam", x: HOME.gaiwan.x + s.gx + br.cx, y: HOME.gaiwan.y + s.gy + br.cy - 4, rate: 3.2, spread: br.rx, lift: 0.8, alpha: 0.35 });
 
     // 公道杯
     const pOff = appear(R.pitcher, 3);
@@ -587,57 +746,63 @@
     R.pitcher.setAttribute("transform", `translate(${HOME.pitcher.x + s.px},${HOME.pitcher.y + s.py + pOff})`);
     R.pBody.setAttribute("transform", `rotate(${s.pr} ${pt.x} ${pt.y})`);
     R.pitcherShadow.style.opacity = Math.max(0, 1 - Math.abs(s.py) / 40);
-    const pTop = -4 - s.pLevel * 90;
-    R.pLiquid.setAttribute("y", pTop);
-    R.pLiquid.setAttribute("transform", `rotate(${-s.pr} 0 ${pTop})`);
+    const pTop = L.pFloor - s.pLevel * L.pH;
+    [R.pLiquid, R.pLiquidDepth].forEach((e) => { e.setAttribute("y", pTop); e.setAttribute("transform", `rotate(${-s.pr} 0 ${pTop})`); });
+    R.pSurface.setAttribute("cy", pTop); R.pSurface.setAttribute("transform", `rotate(${-s.pr} 0 ${pTop})`);
     R.pLiquid.setAttribute("fill", mixColor(WATER, teaCol, s.pTint));
-    R.pLiquid.style.opacity = s.pLevel > 0.01 ? 0.86 : 0;
+    const pOn = s.pLevel > 0.01;
+    R.pLiquid.style.opacity = pOn ? 0.9 : 0; R.pLiquidDepth.style.opacity = pOn ? 1 : 0; R.pSurface.style.opacity = pOn ? 1 : 0;
+    if (!glass && pOn && s.pLevel > 0.12 && s.pr < 12) emit.push({ k: "pst", type: "steam", x: HOME.pitcher.x + s.px + q.pRim.cx, y: HOME.pitcher.y + s.py + q.pRim.cy - 2, rate: 2.2, spread: 36, lift: 0.8, alpha: 0.3 });
 
     // 品茗杯
+    const cr = q.cRim;
     R.cups.forEach((c, i) => {
       const off = appear(c.g, 4 + i * 0.4);
-      const lv = s["c" + i];
+      const l = s["c" + i];
       let x = HOME.cups[i].x, y = HOME.cups[i].y + off, sc = 1;
       if (i === 1) { x += s.c1x; y += s.c1y; sc = s.c1s; }
       c.g.setAttribute("transform", `translate(${x},${y}) scale(${sc})`);
-      c.liq.style.opacity = lv > 0.02 ? 0.95 : 0;
-      c.liq.setAttribute("cy", -34 + (1 - lv) * 7);
-      c.liq.setAttribute("rx", 27 * (0.7 + 0.3 * lv));
-      c.liq.setAttribute("ry", 5.4 * (0.7 + 0.3 * lv));
+      const on = l > 0.02;
+      const cy = cr.cy + (1 - l) * cr.ry * 1.05, rx = cr.rx * 0.9 * (0.7 + 0.3 * l), ry = cr.ry * 0.82 * (0.7 + 0.3 * l);
+      [c.liq, c.depth, c.hi].forEach((e) => { e.setAttribute("cy", cy); e.setAttribute("rx", rx); e.setAttribute("ry", ry); e.style.opacity = on ? 1 : 0; });
+      c.liq.style.opacity = on ? 0.95 : 0;
       c.liq.setAttribute("fill", mixColor(WATER, deep, s.cTint));
-      c.steam.style.opacity = i === 1 ? s.steamCup * 0.8 : 0;
+      if (!glass && l > 0.15) {
+        const sy = s.sip > 0 && i === 1 ? -s.sip * 10 : 0;
+        emit.push({ k: "cst" + i, type: "steam", x: x + cr.cx * sc, y: y + (cr.cy - 2) * sc + sy, rate: i === 1 ? 3 + s.steamCup * 3 : 1.4, spread: 14 * sc, lift: 0.9 * sc, alpha: 0.28 + (i === 1 ? 0.2 * s.steamCup : 0) });
+      }
     });
-
     const c1 = R.cups[1].g;
-    if (s.c1s > 1.05 && c1.nextSibling !== R.kettle) R.layer.insertBefore(c1, R.kettle);
-    else if (s.c1s <= 1.05 && c1.nextSibling !== R.cups[2].g) R.layer.insertBefore(c1, R.cups[2].g);
+    if (s.c1s > 1.05 && c1.nextSibling !== null && R.layer.lastChild !== c1) R.layer.appendChild(c1);
+    else if (s.c1s <= 1.05 && R.layer.lastChild === c1) R.layer.insertBefore(c1, R.cups[2].g);
 
     // 玻璃杯
     if (glass) {
       const wOff = appear(R.glass, 2);
-      R.glass.setAttribute("transform", `translate(${HOME.glass.x + s.wx},${HOME.glass.y + s.wy + wOff}) rotate(${s.wr} 32 -2) scale(${s.ws})`);
-      const top = -4 - s.wLevel * 124;
-      R.wLiquid.setAttribute("y", top);
-      R.wLiquid.setAttribute("height", Math.max(0, -4 - top + 6));
-      R.wLiquid.setAttribute("transform", `rotate(${-s.wr} 0 ${top})`);
-      R.wSurface.setAttribute("cy", top);
-      R.wSurface.setAttribute("transform", `rotate(${-s.wr} 0 ${top})`);
-      const col = mixColor(WATER, teaCol, Math.max(0, Math.min(1, s.wTint)));
+      const wr = s.wr, tb = R.tb;
+      R.glass.setAttribute("transform", `translate(${HOME.glass.x + s.wx},${HOME.glass.y + s.wy + wOff}) scale(${s.ws})`);
+      R.gBody.setAttribute("transform", `rotate(${wr} ${tb.x1 * 0.9} -2)`);
+      const top = L.glassFloor - s.wLevel * L.glassH;
+      const hgt = Math.max(0, L.glassFloor - top + 12);
+      [R.wLiquid, R.wLiquidDepth].forEach((e) => { e.setAttribute("y", top); e.setAttribute("height", hgt); e.setAttribute("transform", `rotate(${-wr} 0 ${top})`); });
+      R.wSurface.setAttribute("cy", top); R.wSurface.setAttribute("transform", `rotate(${-wr} 0 ${top})`);
+      const col = tint(s.wTint);
       R.wLiquid.setAttribute("fill", col);
-      R.wSurface.setAttribute("fill", col);
-      R.wLiquid.style.opacity = R.wSurface.style.opacity = s.wLevel > 0.01 ? 0.62 : 0;
+      const on = s.wLevel > 0.01;
+      R.wLiquid.style.opacity = on ? 0.72 : 0; R.wLiquidDepth.style.opacity = on ? 1 : 0; R.wSurface.style.opacity = on ? 1 : 0;
       R.wLeaves.style.opacity = s.wLeaves;
-      R.wLeaves.setAttribute("fill", tea.leaf);
+      R.wLeaves.style.filter = KIT.wetTint[tea.id];
       R.wLeafList.forEach((lf, i) => {
         const seed = i * 1.7;
-        const floatY = s.wLevel > 0.05 ? top + 10 + ((i * 23) % 70) * (s.wLevel / 0.72) : -10 - (i % 3) * 3;
-        const y = lerp(-8 - (i % 3) * 3, floatY, Math.min(1, s.wLevel * 3)) + Math.sin(now / 900 + seed) * 6 * s.dance;
-        const x = -22 + ((i * 37) % 44) + Math.cos(now / 1100 + seed) * 4 * s.dance;
+        const span = (L.glassH * 0.56) * (s.wLevel / 0.72);
+        const floatY = s.wLevel > 0.05 ? top + 10 + ((i * 23) % 70) / 70 * span : L.glassFloor - 6 - (i % 3) * 4;
+        const y = lerp(L.glassFloor - 6 - (i % 3) * 4, floatY, Math.min(1, s.wLevel * 3)) + Math.sin(now / 900 + seed) * 6 * s.dance;
+        const w2 = (R.tb.x1 - R.tb.x0) * 0.34;
+        const x = (R.tb.x0 + R.tb.x1) / 2 - w2 + ((i * 37) % 100) / 100 * w2 * 2 + Math.cos(now / 1100 + seed) * 4 * s.dance;
         const r = (i * 47) % 180 + Math.sin(now / 1300 + seed) * 25 * s.dance + (s.dance > 0.5 ? 0 : 70);
-        lf.setAttribute("transform", `translate(${x},${y}) rotate(${r}) scale(${0.8 + (i % 3) * 0.15})`);
+        lf.setAttribute("transform", `translate(${x},${y}) rotate(${r})`);
       });
-      R.cups[1].steam.style.opacity = 0;
-      R.kSteam.style.opacity = s.kr < 5 ? R.kSteam.style.opacity : 0;
+      if (on && s.wr < 12) emit.push({ k: "wst", type: "steam", x: HOME.glass.x + s.wx + q.tRim.cx * s.ws, y: HOME.glass.y + s.wy + (q.tRim.cy - 2) * s.ws, rate: 2.4 + s.sip * 0, spread: 20, lift: 0.9, alpha: 0.3 });
     }
 
     // 茶荷
@@ -645,50 +810,49 @@
     R.chahe.setAttribute("transform", `translate(${HOME.chahe.x + s.hx},${HOME.chahe.y + s.hy + hOff}) scale(${s.hs})`);
     R.chaheBody.setAttribute("transform", `rotate(${s.hr} ${L.chaheTip.x} ${L.chaheTip.y})`);
     R.chaheShadow.style.opacity = Math.max(0, 1 - Math.abs(s.hy) / 30);
-    R.hLeaves.style.opacity = s.hLeaves;
-    R.hLeaves.setAttribute("fill", tea.leaf);
+    R.hPile.style.opacity = s.hLeaves;
 
-    // 落葉
+    // 落葉（成撮乾茶跌入碗中）
     const hTip = rot(L.chaheTip, L.chaheTip, s.hr);
     const from = { x: HOME.chahe.x + s.hx + hTip.x * s.hs, y: HOME.chahe.y + s.hy + hTip.y * s.hs };
-    const intoGlass = glass;
-    const to = intoGlass ? { x: HOME.glass.x, y: HOME.glass.y - 40 } : { x: HOME.gaiwan.x, y: HOME.gaiwan.y - 66 };
-    R.fall.setAttribute("fill", tea.leaf);
+    const to = glass ? { x: HOME.glass.x + q.tRim.cx, y: HOME.glass.y + q.tRim.cy } : { x: HOME.gaiwan.x + br.cx, y: HOME.gaiwan.y + br.cy };
     R.fallLeaves.forEach((lf, i) => {
       const k = Math.max(0, Math.min(1, s.fall * 1.6 - i * 0.09));
       const vis = s.fall > 0 && s.fall < 1 && k > 0 && k < 1;
       lf.style.opacity = vis ? 1 : 0;
       if (vis) {
-        const x = lerp(from.x, to.x + (i - 3) * 6, k), y = from.y + (to.y - from.y) * k * k;
-        lf.setAttribute("transform", `translate(${x},${y}) rotate(${i * 50 + k * 220}) scale(1.1)`);
+        const x = lerp(from.x, to.x + (i - 3) * 5, k), y = from.y + (to.y - from.y) * k * k;
+        lf.setAttribute("transform", `translate(${x},${y}) rotate(${i * 50 + k * 220}) translate(-8,-5)`);
       }
     });
 
     // 水流
-    const setStream = (S, on, a, b, dir, col) => {
-      const vis = on > 0.02;
-      S.main.style.opacity = S.hi.style.opacity = vis ? on : 0;
-      if (!vis) return;
-      const d = streamPath(a, b, dir);
-      S.main.setAttribute("d", d); S.hi.setAttribute("d", d);
-      S.main.setAttribute("stroke", col);
-    };
     const kDir = { x: Math.cos(rad(s.kr - 60)), y: Math.sin(rad(s.kr - 60)) };
-    const kTarget = glass ? { x: tip.x + 4, y: HOME.glass.y - 6 - s.wLevel * 124 } : { x: tip.x + 4, y: HOME.gaiwan.y + s.gy - 68 + (1 - s.gLevel) * 10 };
-    setStream(R.sK, s.sK, tip, kTarget, kDir, "#e6f3f7");
+    const kTarget = glass
+      ? { x: tip.x + 4, y: HOME.glass.y + s.wy + L.glassFloor - s.wLevel * L.glassH }
+      : { x: tip.x + 4, y: HOME.gaiwan.y + s.gy + gl.cy };
+    const waterCol = "#e9f6fb";
+    ribbon(R.sK, s.sK, tip, kTarget, kDir, 4.4, waterCol, now, 0.8);
     const lipW = { x: HOME.gaiwan.x + s.gx + lip.x, y: HOME.gaiwan.y + s.gy + lip.y };
-    const gTo = s.sGTarget === "tray" ? { x: lipW.x + 6, y: HOME.pitcher.y - 2 } : { x: lipW.x + 6, y: HOME.pitcher.y - 6 - s.pLevel * 90 };
-    setStream(R.sG, s.sG, lipW, gTo, { x: 0.5, y: 0.6 }, tint(s.gTint));
+    const gTo = s.sGTarget === "tray" ? { x: lipW.x + 6, y: HOME.pitcher.y - 2 } : { x: lipW.x + 6, y: HOME.pitcher.y + L.pFloor - s.pLevel * L.pH };
+    ribbon(R.sG, s.sG, lipW, gTo, { x: 0.5, y: 0.6 }, 5, tint(s.gTint), now, 0.55);
     const pTipW = { x: HOME.pitcher.x + s.px + pt.x, y: HOME.pitcher.y + s.py + pt.y };
     const ci = Math.round(s.pTarget || 0);
-    const cupTo = { x: pTipW.x + 4, y: HOME.cups[ci].y - 34 + (1 - s["c" + ci]) * 7 };
-    setStream(R.sP, s.sP, pTipW, cupTo, { x: 0.5, y: 0.6 }, mixColor(WATER, deep, s.pTint));
+    const cupTo = { x: pTipW.x + 4, y: HOME.cups[ci].y + cr.cy + (1 - s["c" + ci]) * cr.ry * 1.05 };
+    ribbon(R.sP, s.sP, pTipW, cupTo, { x: 0.5, y: 0.6 }, 3.8, mixColor(WATER, deep, s.pTint), now, 0.55);
+    const lands = [[s.sK, kTarget, 22], [s.sG, gTo, 20], [s.sP, cupTo, 12]];
+    lands.forEach(([on, p, w], i) => {
+      if (on > 0.5) {
+        emit.push({ k: "sp" + i, type: "splash", x: p.x, y: p.y, rate: 34 * on });
+        emit.push({ k: "rp" + i, type: "ripple", x: p.x, y: p.y, w, rate: 3.2 });
+      }
+    });
 
     // 水滴
     if (s.drop > 0 && s.drop < 1) {
       let a, bY;
-      if (s.dropTarget === "pitcher") { a = lipW; bY = HOME.pitcher.y - 6 - s.pLevel * 90; }
-      else { a = pTipW; bY = HOME.cups[ci].y - 32; }
+      if (s.dropTarget === "pitcher") { a = lipW; bY = HOME.pitcher.y + L.pFloor - s.pLevel * L.pH; }
+      else { a = pTipW; bY = HOME.cups[ci].y + cr.cy; }
       const k = (s.drop * 3) % 1;
       R.drop.style.opacity = 1;
       R.drop.setAttribute("cx", a.x + 2);
@@ -698,8 +862,8 @@
 
     // 計時
     R.timer.style.opacity = s.timer > 0 && s.timer < 1 ? 1 : 0;
-    R.timer.setAttribute("transform", `translate(${HOME.gaiwan.x + 92},${HOME.gaiwan.y - 120})`);
-    R.timerArc.setAttribute("stroke-dashoffset", (125.7 * s.timer).toFixed(1));
+    R.timer.setAttribute("transform", `translate(${HOME.gaiwan.x + 96},${HOME.gaiwan.y - 118})`);
+    R.timerArc.setAttribute("stroke-dashoffset", (119.4 * s.timer).toFixed(1));
     R.timerText.textContent = s.timerText || "";
 
     // 標籤
@@ -720,19 +884,49 @@
       if (glass) R.glass.setAttribute("transform", R.glass.getAttribute("transform") + ` translate(0,${-s.sip * 14})`);
       else R.cups[1].g.setAttribute("transform", R.cups[1].g.getAttribute("transform") + ` translate(0,${-s.sip * 10})`);
     }
+
+    // 特效與鏡頭
+    fxUpdate(R, now, dt, quiet ? [] : emit);
+    cameraStep(R, s, { tip, kTarget, lipW, gTo, pTipW, cupTo, from, to, br, glass }, dt);
+  }
+
+  /* 鏡頭：按當前動作自動推近，緩動跟隨 */
+  function cameraStep(R, s, P, dt) {
+    let f = { x: 420, y: 330, z: 1.04 };
+    const mid = (a, b, k = 0.5) => ({ x: lerp(a.x, b.x, k), y: lerp(a.y, b.y, k) });
+    if (s.sK > 0.05 || s.kr > 8) { const m = mid(P.tip, P.kTarget, 0.35); f = { x: m.x - 18, y: m.y - 30, z: 1.32 }; }
+    else if (s.sG > 0.05 || s.gr > 10) { const m = mid(P.lipW, P.gTo, 0.5); f = { x: m.x, y: m.y - 10, z: 1.42 }; }
+    else if (s.sP > 0.05 || s.pr > 10) { const m = mid(P.pTipW, P.cupTo, 0.5); f = { x: m.x - 10, y: m.y - 6, z: 1.48 }; }
+    else if (s.lid > 0.02 && s.lid < 0.98 || s.lidX !== 0) f = { x: HOME.gaiwan.x + R.q.bowlRim.cx, y: HOME.gaiwan.y + R.q.bowlRim.cy - 6, z: 1.5 };
+    else if (s.hs > 1.3) f = { x: HOME.chahe.x + s.hx, y: HOME.chahe.y + s.hy - 20, z: 1.25 };
+    else if (s.fall > 0 && s.fall < 1 || (s.hr > 6 && s.hx > 10)) { const m = mid(P.from, P.to, 0.5); f = { x: m.x, y: m.y - 4, z: 1.5 }; }
+    else if (s.c1s > 1.05) f = { x: HOME.cups[1].x + s.c1x, y: HOME.cups[1].y + s.c1y - 30, z: 1.25 };
+    else if (s.ws > 1.1) f = { x: HOME.glass.x + s.wx, y: HOME.glass.y + s.wy - 50, z: 1.3 };
+    else if (s.wr > 10 || s.wLevel > 0.05 && s.mode === "glass" && s.sK > 0) f = { x: HOME.glass.x, y: HOME.glass.y - 50, z: 1.4 };
+    f.x = Math.max(400 / f.z, Math.min(800 - 400 / f.z, f.x));
+    f.y = Math.max(250 / f.z, Math.min(500 - 250 / f.z, f.y));
+    const C = R.cam0;
+    if (!R.camSet || R.noCam) { Object.assign(C, R.noCam ? { x: 400, y: 250, z: 1 } : f); R.camSet = true; }
+    else { const k = 1 - Math.exp(-dt / 0.42); C.x += (f.x - C.x) * k; C.y += (f.y - C.y) * k; C.z += (f.z - C.z) * k; }
+    R.cam.setAttribute("transform", `translate(${(400 - C.z * C.x).toFixed(2)},${(250 - C.z * C.y).toFixed(2)}) scale(${C.z.toFixed(4)})`);
   }
 
   /* ---------- 對外介面 ---------- */
+  const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const styleListeners = [];
+  const store = { get() { try { return localStorage.getItem("tea-style"); } catch (e) { return null; } }, set(v) { try { localStorage.setItem("tea-style", v); } catch (e) {} } };
+  let GLOBAL_STYLE = store.get() === "I" ? "I" : "R";
+
   function createStage(svg, opts = {}) {
-    const R = buildScene(svg);
-    R.onLabel = opts.onLabel;
-    let tea = null, clip = null, clipId = null, t = 0, playing = false, last = 0, raf = 0, speed = 1;
-    const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let style = GLOBAL_STYLE;
+    let R = null, tea = null, clip = null, clipId = null, t = 0, playing = false, last = 0, raf = 0, speed = 1, visible = true, ready = false, idleTick = 0;
+    const build = () => { R = buildScene(svg, style); R.onLabel = opts.onLabel; R.noCam = reduce; R.camSet = false; };
     function frame(now) {
       raf = 0;
+      if (!ready) return;
+      const dtRaw = Math.min(0.05, Math.max(0, (now - last) / 1000));
       if (playing) {
-        const dt = Math.min(0.05, (now - last) / 1000) * speed;
-        t += dt;
+        t += dtRaw * speed;
         if (t >= clip.dur) {
           t = clip.dur; playing = false; setRun(false);
           opts.onEnd && opts.onEnd(clipId);
@@ -740,22 +934,43 @@
         }
       }
       last = now;
-      if (clip) render(R, clip.sample(t), tea, reduce ? 0 : now);
+      if (clip && (playing || (idleTick++ & 1) === 0)) {
+        const s = clip.sample(t);
+        render(R, s, tea, reduce ? 0 : now, dtRaw, reduce);
+        opts.onFrame && opts.onFrame(s, playing, tea);
+      }
       opts.onProgress && clip && opts.onProgress(t / clip.dur);
-      if (playing) raf = requestAnimationFrame(frame);
+      if (playing || (visible && !reduce && !document.hidden)) raf = requestAnimationFrame(frame);
     }
     function setRun(on) { svg.classList.toggle("is-playing", on); }
-    function kick() {
-      if (!raf) raf = requestAnimationFrame((n) => { if (!playing) last = n; frame(n); });
+    function kick() { if (!raf && ready) raf = requestAnimationFrame((n) => { last = n; frame(n); }); }
+    function boot() {
+      ready = false;
+      svg.classList.add("is-loading");
+      return preload(style).then(() => {
+        build();
+        ready = true;
+        svg.classList.remove("is-loading");
+        if (tea && clipId) { clip = buildClip(clipId, tea); render(R, clip.sample(Math.min(t, clip.dur)), tea, 0, 0.016, true); }
+        kick();
+      });
     }
+    if ("IntersectionObserver" in window) {
+      new IntersectionObserver((en) => { visible = en.some((x) => x.isIntersecting); if (visible) kick(); }).observe(svg);
+    }
+    document.addEventListener("visibilitychange", () => { if (!document.hidden) kick(); });
+    styleListeners.push((st) => { if (st !== style) { style = st; boot(); } });
+    const booted = boot();
     return {
       load(newTea, id, autoplay) {
         tea = newTea; clipId = id; clip = buildClip(id, tea);
         t = 0; playing = !!autoplay;
         if (!autoplay) t = reduce || id === "prepare" ? clip.dur : 0;
         last = performance.now(); setRun(playing);
+        if (R) { R.camSet = false; R.fx.acc = {}; }
         opts.onState && opts.onState(playing);
-        kick();
+        booted.then(kick);
+        if (ready) kick();
       },
       play() { if (!clip) return; if (t >= clip.dur) t = 0; playing = true; setRun(true); last = performance.now(); opts.onState && opts.onState(true); kick(); },
       pause() { playing = false; setRun(false); opts.onState && opts.onState(false); },
@@ -765,9 +980,18 @@
       setSpeed(v) { speed = v; },
       get playing() { return playing; },
       get duration() { return clip ? clip.dur : 0; },
+      get ready() { return ready; },
+      get state() { return clip ? clip.sample(t) : null; },
       destroy() { cancelAnimationFrame(raf); }
     };
   }
 
-  window.TeaStage = { createStage, buildClip };
+  function setStyle(st) {
+    st = st === "I" ? "I" : "R";
+    if (st === GLOBAL_STYLE) return;
+    GLOBAL_STYLE = st; store.set(st);
+    styleListeners.forEach((fn) => fn(st));
+  }
+
+  window.TeaStage = { createStage, buildClip, setStyle, getStyle: () => GLOBAL_STYLE, _dbg: () => ({ L, HOME }) };
 })();

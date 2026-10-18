@@ -24,6 +24,7 @@
 
   const stage = (window.__teaStage = TeaStage.createStage($("stage"), {
     onProgress: (p) => ($("progressBar").style.width = (p * 100).toFixed(1) + "%"),
+    onFrame: (s, playing) => window.TeaAudio && TeaAudio.feed("main", s, playing),
     onLabel: (tx) => setLabel($("cuLabel"), tx),
     onState: (playing) => setPlayUI(playing),
     onEnd: () => {
@@ -232,6 +233,20 @@
   });
   $("prevBtn").onclick = () => goStep(state.step - 1, true);
   $("nextBtn").onclick = () => goStep(state.step + 1, true);
+  /* 畫面風格、音效、背景音樂 */
+  const paintStyle = () => { const st = TeaStage.getStyle(); $("styleR").setAttribute("aria-pressed", st === "R"); $("styleI").setAttribute("aria-pressed", st === "I"); };
+  $("styleR").onclick = () => { TeaStage.setStyle("R"); paintStyle(); };
+  $("styleI").onclick = () => { TeaStage.setStyle("I"); paintStyle(); };
+  paintStyle();
+  if (window.TeaAudio) {
+    const paintAudio = (a) => {
+      $("sfxBtn").setAttribute("aria-pressed", a.sfx); $("sfxBtn").setAttribute("aria-label", a.sfx ? "音效：開" : "音效：關");
+      $("musicBtn").setAttribute("aria-pressed", a.music); $("musicBtn").setAttribute("aria-label", a.music ? "背景音樂：開" : "背景音樂：關");
+    };
+    TeaAudio.onChange(paintAudio);
+    $("sfxBtn").onclick = () => TeaAudio.setSfx(!TeaAudio.sfx);
+    $("musicBtn").onclick = () => TeaAudio.setMusic(!TeaAudio.music);
+  } else { $("sfxBtn").hidden = $("musicBtn").hidden = true; }
   $("playBtn").onclick = () => stage.toggle();
   $("replayBtn").onclick = () => stage.replay();
   $("speedBtn").onclick = () => {
@@ -311,7 +326,7 @@
   });
 
   /* ---------- 技巧 ---------- */
-  const stage2 = TeaStage.createStage($("stage2"), { onLabel: (tx) => setLabel($("cuLabel2"), tx) });
+  const stage2 = TeaStage.createStage($("stage2"), { onLabel: (tx) => setLabel($("cuLabel2"), tx), onFrame: (st, playing) => window.TeaAudio && TeaAudio.feed("skill", st, playing) });
   const skillTea = (sk) => (sk.clip === "phoenix" ? D.teas[0] : D.teas.find((t) => t.id === "oolong"));
   let skillIdx = 0;
   function renderSkills() {
