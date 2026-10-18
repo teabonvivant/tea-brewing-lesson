@@ -125,9 +125,9 @@
     return { u: m.x + 4 - (HOME.cups[i].x + p.x), y: m.y - h - (HOME.cups[i].y + p.y) };
   }
   /* 玻璃杯傾側倒水：令最低的杯沿落在水洗口上方 h 處 */
-  function aimGlassToWash(r, h) {
+  function aimGlassToWash(r, h, dx = 4) {
     const lo = [{ x: L.tbx0, y: L.glassTop }, { x: L.tbx1, y: L.glassTop }].map((p) => rot(p, L.tPivot, -r)).sort((a, b) => b.y - a.y)[0], m = washMouth();
-    return { x: m.x + 4 - (HOME.glass.x + lo.x), y: m.y - h - (HOME.glass.y + lo.y) };
+    return { x: m.x + dx - (HOME.glass.x + lo.x), y: m.y - h - (HOME.glass.y + lo.y) };
   }
 
   function kettlePour(c, t0, target, o) {
@@ -236,11 +236,11 @@
           c.label(t, "轉動杯身，令杯壁受熱");
           c.key("wr", t, 0).key("wr", t + 0.4, -8).key("wr", t + 0.8, 8).key("wr", t + 1.2, -8).key("wr", t + 1.6, 0);
           t += 1.8;
-          const ga = aimGlassToWash(112, 14);
-          c.label(t, "提杯傾側，把溫杯水倒入水洗").key("wr", t, 0).key("wy", t, 0).key("wx", t, 0).key("wy", t + 0.6, -50).key("wx", t + 0.6, ga.x * 0.2)
-            .key("wx", t + 1.5, ga.x).key("wy", t + 1.5, ga.y).key("wr", t + 1.5, -112)
+          const GR = 105, ga = aimGlassToWash(GR, 3, 8);
+          c.label(t, "提杯傾側，把溫杯水倒入水洗").key("wr", t, 0).key("wy", t, 0).key("wx", t, 0).key("wy", t + 0.6, -54).key("wx", t + 0.6, ga.x * 0.6)
+            .key("wx", t + 1.5, ga.x).key("wy", t + 1.5, ga.y).key("wr", t + 1.5, -GR)
             .key("wLevel", t + 1.6, 0.3).key("wLevel", t + 2.5, 0).hold("sW", t, t + 1.5, 0).key("sW", t + 1.7, 1).key("sW", t + 2.4, 1).key("sW", t + 2.6, 0)
-            .key("wx", t + 2.7, ga.x).key("wy", t + 2.7, ga.y).key("wr", t + 2.7, -112).key("wr", t + 3.3, 0).key("wx", t + 3.5, 0).key("wy", t + 3.5, 0);
+            .key("wx", t + 2.7, ga.x).key("wy", t + 2.7, ga.y).key("wr", t + 2.7, -GR).key("wr", t + 3.3, 0).key("wx", t + 3.5, 0).key("wy", t + 3.5, 0);
         } else {
           c.label(0, "沸水注入蓋碗").key("lid", 0, 1).key("lid", 0.5, 0);
           let t = kettlePour(c, 0.1, gTarget(0.4), { r: 36, h: 30, dur: 1.4 });
@@ -704,7 +704,18 @@
 
     // 茶夾：平時橫放在杯前，溫杯時夾住品茗杯
     R.tongs = el("g", {}, R.layer);
-    img(R.tongs, "tongs");
+    {
+      // 兩支夾臂分開裁切，繞尾端連接處轉動，做出開合
+      const t = g.tongs, my = t.y + t.h * 0.5;
+      R.tongHinge = { x: t.x + t.w * 0.03, y: my };
+      R.tongArms = [[t.y - 2, my - t.y + 2], [my, t.h + 2]].map(([y, h], i) => {
+        const cp = el("clipPath", { id: "tb-tg" + i }, defs);
+        el("rect", { x: t.x - 2, y, width: t.w + 4, height: h }, cp);
+        const arm = el("g", {}, R.tongs);
+        img(el("g", { "clip-path": `url(#tb-tg${i})` }, arm), "tongs");
+        return arm;
+      });
+    }
 
     // 水流、落葉、水滴、水氣
     R.streams = el("g", {}, R.cam);
@@ -961,6 +972,10 @@
       const pos = { x: lerp(home.x, ready.x, s.tr), y: lerp(home.y, ready.y, s.tr) };
       const a = lerp(lerp(60, 26, s.tr), Math.min(48, 24 + 0.2 * Math.abs(cr2)), k);
       R.tongs.setAttribute("transform", `translate(${pos.x.toFixed(1)},${pos.y.toFixed(1)}) rotate(${(-a).toFixed(1)}) scale(-1,1)`);
+      // 夾杯前張開、夾住時收緊（夾臂貼杯壁），放下時再張開
+      const spread = 5.5 * Math.sin(Math.PI * Math.min(1, k)) - 1.4 * Math.pow(k, 4);
+      R.tongSpread = spread;
+      R.tongArms.forEach((arm, i) => arm.setAttribute("transform", `rotate(${((i ? 1 : -1) * spread).toFixed(2)} ${R.tongHinge.x.toFixed(1)} ${R.tongHinge.y.toFixed(1)})`));
       R.tongsTip = k > 0.3 ? hold : pos;
     }
 
