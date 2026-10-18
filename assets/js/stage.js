@@ -6,10 +6,10 @@
   const HOME = {
     kettle: { x: 62, y: 322 },
     caddy: { x: 92, y: 410 },
-    gaiwan: { x: 322, y: 268 },
+    gaiwan: { x: 322, y: 276 },
     glass: { x: 390, y: 270 },
     towel: { x: 706, y: 424 },
-    pitcher: { x: 450, y: 268 },
+    pitcher: { x: 402, y: 250 },
     cups: [{ x: 318, y: 376 }, { x: 394, y: 376 }, { x: 470, y: 376 }],
     chahe: { x: 172, y: 442 },
     holder: { x: 768, y: 352 },
@@ -149,7 +149,7 @@
     return t0 + 1.8 + dur;
   }
   function gaiwanPour(c, t0, target, dur, base, arc) {
-    const dx = target.x - (HOME.gaiwan.x + L.gaiwanLip.x), dy = target.y - 26 - (HOME.gaiwan.y + L.gaiwanLip.y);
+    const dx = target.x - (HOME.gaiwan.x + L.gaiwanLip.x), dy = target.y - 20 - (HOME.gaiwan.y + L.gaiwanLip.y);
     c.key("gx", t0, 0).key("gy", t0, 0).key("gr", t0, 0);
     if (arc) c.key("gx", t0 + 0.35, dx * 0.45).key("gy", t0 + 0.35, Math.min(dy, 0) - arc).key("gr", t0 + 0.35, 6);
     c.key("gx", t0 + 0.7, dx).key("gy", t0 + 0.7, dy).key("gr", t0 + 0.7, 18)
@@ -537,7 +537,7 @@
     <radialGradient id="tb-steam"><stop offset="0" stop-color="#fff" stop-opacity=".9"/><stop offset=".5" stop-color="#fff" stop-opacity=".35"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
     <radialGradient id="tb-vig" cx=".5" cy=".5" r=".75"><stop offset=".55" stop-color="#140a05" stop-opacity="0"/><stop offset="1" stop-color="#140a05" stop-opacity=".5"/></radialGradient>
     <linearGradient id="tb-sun" x1="1" y1="0" x2="0" y2=".7"><stop offset="0" stop-color="#ffd9a0" stop-opacity=".22"/><stop offset=".6" stop-color="#ffd9a0" stop-opacity="0"/></linearGradient>
-    <linearGradient id="tb-lqdepth" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".22"/><stop offset=".35" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#220d00" stop-opacity=".3"/></linearGradient>
+    <linearGradient id="tb-lqdepth" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fffbe8" stop-opacity=".34"/><stop offset=".3" stop-color="#fff2c4" stop-opacity=".05"/><stop offset=".72" stop-color="#d4760f" stop-opacity=".16"/><stop offset="1" stop-color="#8a3a05" stop-opacity=".34"/></linearGradient>
     <radialGradient id="tb-lqhi" cx=".7" cy=".3" r=".6"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
     <radialGradient id="tb-ember" cx=".5" cy=".6" r=".6"><stop offset="0" stop-color="#ffb347" stop-opacity=".85"/><stop offset=".5" stop-color="#ff6a1f" stop-opacity=".35"/><stop offset="1" stop-color="#ff6a1f" stop-opacity="0"/></radialGradient>
   </defs>`;
@@ -662,6 +662,13 @@
 
     // 品茗杯
     const cr = q.cRim;
+    HOME.cups.forEach((c) => {
+      const sg = el("g", { transform: `translate(${c.x},${c.y})` }, R.layer);
+      el("ellipse", { cx: 0, cy: 3, rx: 37, ry: 11, fill: "#000", opacity: 0.28 }, sg);
+      el("ellipse", { cx: 0, cy: 0, rx: 35, ry: 10.5, fill: "#34302d" }, sg);
+      el("ellipse", { cx: 0, cy: -0.8, rx: 26, ry: 7, fill: "#45403b" }, sg);
+      el("ellipse", { cx: 0, cy: -1.4, rx: 35, ry: 10.5, fill: "none", stroke: "#8a8178", "stroke-opacity": 0.55, "stroke-width": 0.8 }, sg);
+    });
     R.cups = HOME.cups.map(() => {
       const gr = el("g", {}, R.layer);
       shadow(gr, 30, 6);
