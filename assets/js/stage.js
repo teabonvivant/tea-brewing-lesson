@@ -145,6 +145,26 @@
     c.lastPx = a.x; c.lastPy = a.y - 34; c.lastPr = 22;
     return t0 + 1.2 + dur;
   }
+  const aimGaiwan = (target, h) => ({ x: target.x - (HOME.gaiwan.x + L.gaiwanLip.x), y: target.y - h - (HOME.gaiwan.y + L.gaiwanLip.y) });
+  function gaiwanCup(c, t0, i, dur, from, to, cupFrom, cupTo, r) {
+    const a = aimGaiwan(cupTop(i), 30);
+    c.key("gx", t0, c.lastGx || 0).key("gy", t0, c.lastGy || 0).key("gr", t0, c.lastGr || 0)
+      .key("gx", t0 + 0.5, a.x).key("gy", t0 + 0.5, a.y).key("gr", t0 + 0.5, r - 22)
+      .key("gr", t0 + 0.75, r).key("gr", t0 + 0.75 + dur, r + 4).key("gr", t0 + 1.0 + dur, r - 30)
+      .key("gx", t0 + 0.75 + dur, a.x).key("gy", t0 + 0.75 + dur, a.y).key("gy", t0 + 1.0 + dur, a.y - 16)
+      .key("pTarget", t0, i)
+      .hold("sG", t0, t0 + 0.7, 0).key("sG", t0 + 0.82, 1).key("sG", t0 + 0.7 + dur, 1).key("sG", t0 + 0.85 + dur, 0)
+      .key("gLevel", t0 + 0.75, from).key("gLevel", t0 + 0.75 + dur, to)
+      .key("c" + i, t0 + 0.8, cupFrom).key("c" + i, t0 + 0.8 + dur, cupTo);
+    c.lastGx = a.x; c.lastGy = a.y - 16; c.lastGr = r - 30;
+    return t0 + 1.0 + dur;
+  }
+  function gaiwanHome(c, t0) {
+    c.key("gx", t0, c.lastGx || 0).key("gy", t0, c.lastGy || 0).key("gr", t0, c.lastGr || 0)
+      .key("gr", t0 + 0.4, 0).key("gx", t0 + 0.8, 0).key("gy", t0 + 0.8, 0);
+    c.lastGx = c.lastGy = c.lastGr = 0;
+    return t0 + 0.8;
+  }
   function pitcherHome(c, t0) {
     c.key("px", t0, c.lastPx || 0).key("py", t0, c.lastPy || 0).key("pr", t0, c.lastPr || 0)
       .key("pr", t0 + 0.4, 0).key("px", t0 + 0.8, 0).key("py", t0 + 0.8, 0);
@@ -325,33 +345,33 @@
         c.label(4.6, "茶葉翻動，濃淡均勻");
         break;
       case "patrol": {
-        c.label(0, "壺低懸杯上，來回巡斟");
-        b.pLevel = 0.85; b.pTint = 1;
-        let t = 0.1, lvl = 0.85;
+        c.label(0, "蓋甌低懸杯上，來回巡斟");
+        Object.assign(b, { gLevel: 0.9, gTint: 1, gLeaves: 1, lid: 1, pLevel: 0, sGTarget: "cup" });
+        let t = 0.1, lvl = 0.9;
         const order = [0, 1, 2, 2, 1, 0];
         order.forEach((i, k) => {
           const before = k < 3 ? 0 : 0.35;
-          t = pitcherPour(c, t - (k ? 0.5 : 0), i, 0.35, lvl, lvl - 0.12, before, before + 0.33) ;
-          lvl -= 0.12;
+          t = gaiwanCup(c, t, i, 0.45, lvl, lvl - 0.13, before, before + 0.31, 80);
+          lvl -= 0.13;
         });
-        pitcherHome(c, t);
+        c.label(t - 1.2, "每杯輪流斟，濃淡一致");
+        gaiwanHome(c, t);
         break;
       }
       case "points": {
         c.label(0, "最後幾滴濃湯，逐杯點入");
-        b.pLevel = 0.06; b.c0 = 0.66; b.c1 = 0.66; b.c2 = 0.66;
+        Object.assign(b, { gLevel: 0.05, gTint: 1, gLeaves: 1, lid: 1, pLevel: 0, c0: 0.66, c1: 0.66, c2: 0.66 });
         let t = 0.1;
         [0, 1, 2].forEach((i) => {
-          const a = aimPitcher(cupTop(i), 70, 48);
-          c.key("px", t, c.lastPx || 0).key("py", t, c.lastPy || 0).key("pr", t, c.lastPr || 0)
-            .key("px", t + 0.6, a.x).key("py", t + 0.6, a.y).key("pr", t + 0.6, 70).key("pTarget", t, i)
-            .key("drop", t + 0.7, 0).key("drop", t + 1.5, 0.999).key("drop", t + 1.51, 0).key("dropTarget", t, "cup" + i)
+          const a = aimGaiwan(cupTop(i), 34);
+          c.key("gx", t, c.lastGx || 0).key("gy", t, c.lastGy || 0).key("gr", t, c.lastGr || 0)
+            .key("gx", t + 0.6, a.x).key("gy", t + 0.6, a.y).key("gr", t + 0.6, 92).key("pTarget", t, i)
+            .key("drop", t + 0.7, 0).key("drop", t + 1.5, 0.999).key("drop", t + 1.51, 0).key("dropTarget", t, "gcup" + i)
             .key("c" + i, t + 0.9, 0.66).key("c" + i, t + 1.5, 0.72);
-          c.lastPx = a.x; c.lastPy = a.y; c.lastPr = 70;
+          c.lastGx = a.x; c.lastGy = a.y; c.lastGr = 92;
           t += 1.6;
         });
-        c.key("pr", t, 70).key("pr", t + 0.4, 0);
-        pitcherHome(c, t + 0.2);
+        gaiwanHome(c, t);
         break;
       }
     }
@@ -490,9 +510,6 @@
     const frontClip = el("clipPath", { id: "tb-stf" }, defs);
     el("rect", { x: st.x - 4, y: q.stoveFrontY, width: st.w + 8, height: st.h }, frontClip);
     img(R.stoveFront, "stove").setAttribute("clip-path", "url(#tb-stf)");
-    R.tempChip = el("g", {}, R.layer);
-    el("rect", { x: -64, y: -17, width: 128, height: 34, rx: 17, fill: "#241912", opacity: 0.78, stroke: "#e2b866", "stroke-opacity": 0.55 }, R.tempChip);
-    R.tempText = el("text", { x: 0, y: 6, "text-anchor": "middle", "font-size": 17, fill: "#f6e7c8", class: "tb-svgtext" }, R.tempChip);
 
     // 茶巾、茶罐
     R.towel = el("g", { transform: `translate(${HOME.towel.x},${HOME.towel.y})` }, R.layer);
@@ -593,13 +610,6 @@
     for (let i = 0; i < 6; i++) R.fx.ripples.push({ n: el("ellipse", { fill: "none", stroke: "#fff", "stroke-width": 1, opacity: 0 }, R.fxLayer), life: 0 });
     for (let i = 0; i < 28; i++) R.fx.splash.push({ n: el("circle", { r: 1.3, fill: "#fff", opacity: 0 }, R.fxLayer), life: 0 });
     for (let i = 0; i < 24; i++) R.fx.steam.push({ n: el("circle", { r: 8, fill: "url(#tb-steam)", opacity: 0 }, R.fxLayer), life: 0 });
-
-    // 計時
-    R.timer = el("g", {}, R.cam);
-    el("circle", { r: 30, fill: "#241912", opacity: 0.8 }, R.timer);
-    el("circle", { r: 19, fill: "none", stroke: "#6d5a48", "stroke-width": 4 }, R.timer);
-    R.timerArc = el("circle", { r: 19, fill: "none", stroke: "#e2b866", "stroke-width": 4, "stroke-dasharray": "119.4", transform: "rotate(-90)", "stroke-linecap": "round" }, R.timer);
-    R.timerText = el("text", { y: 5, "text-anchor": "middle", "font-size": 14, fill: "#f6e7c8", class: "tb-svgtext" }, R.timer);
 
     // 光影與標籤（畫面固定，不隨鏡頭）
     el("rect", { x: 0, y: 0, width: 800, height: 500, fill: "url(#tb-sun)", "pointer-events": "none" }, svg);
@@ -702,9 +712,7 @@
       if (kFront) R.layer.appendChild(R.kettle); else R.layer.insertBefore(R.kettle, R.stoveFront);
     }
     if (s.kr < 5 && show > 0.5) emit.push({ k: "kst", type: "steam", x: tip.x - 2, y: tip.y - 2, rate: 5, spread: 2, lift: 1.3, alpha: 0.5 });
-    R.tempChip.setAttribute("transform", `translate(${HOME.kettle.x + 28},${HOME.kettle.y + q.kettleOff.y + g.kettle.y - 12})`);
-    R.tempChip.style.opacity = s.temp * Math.max(0, 1 - Math.abs(s.kx) / 40);
-    R.tempText.textContent = tea.temp[0] === tea.temp[1] ? `水溫 ${tea.temp[0]}°C` : `水溫 ${tea.temp[0]}–${tea.temp[1]}°C`;
+    const hudTemp = s.sK > 0.05 || s.kr > 8 || (s.temp && Math.abs(s.kx) < 4) ? (tea.temp[0] === tea.temp[1] ? `水溫 ${tea.temp[0]}°C` : `水溫 ${tea.temp[0]}–${tea.temp[1]}°C`) : "";
 
     // 蓋碗
     R.gaiwan.style.display = glass ? "none" : "";
@@ -834,11 +842,14 @@
     const waterCol = "#e9f6fb";
     ribbon(R.sK, s.sK, tip, kTarget, kDir, 4.4, waterCol, now, 0.8);
     const lipW = { x: HOME.gaiwan.x + s.gx + lip.x, y: HOME.gaiwan.y + s.gy + lip.y };
-    const gTo = s.sGTarget === "tray" ? { x: lipW.x + 6, y: HOME.pitcher.y - 2 } : { x: lipW.x + 6, y: HOME.pitcher.y + L.pFloor - s.pLevel * L.pH };
+    const ci = Math.round(s.pTarget || 0);
+    const cupSurf = HOME.cups[ci].y + cr.cy + (1 - s["c" + ci]) * cr.ry * 1.05;
+    const gTo = s.sGTarget === "tray" ? { x: lipW.x + 6, y: HOME.pitcher.y - 2 }
+      : s.sGTarget === "cup" ? { x: lipW.x + 4, y: cupSurf }
+      : { x: lipW.x + 6, y: HOME.pitcher.y + L.pFloor - s.pLevel * L.pH };
     ribbon(R.sG, s.sG, lipW, gTo, { x: 0.5, y: 0.6 }, 5, tint(s.gTint), now, 0.55);
     const pTipW = { x: HOME.pitcher.x + s.px + pt.x, y: HOME.pitcher.y + s.py + pt.y };
-    const ci = Math.round(s.pTarget || 0);
-    const cupTo = { x: pTipW.x + 4, y: HOME.cups[ci].y + cr.cy + (1 - s["c" + ci]) * cr.ry * 1.05 };
+    const cupTo = { x: pTipW.x + 4, y: cupSurf };
     ribbon(R.sP, s.sP, pTipW, cupTo, { x: 0.5, y: 0.6 }, 3.8, mixColor(WATER, deep, s.pTint), now, 0.55);
     const lands = [[s.sK, kTarget, 22], [s.sG, gTo, 20], [s.sP, cupTo, 12]];
     lands.forEach(([on, p, w], i) => {
@@ -852,6 +863,7 @@
     if (s.drop > 0 && s.drop < 1) {
       let a, bY;
       if (s.dropTarget === "pitcher") { a = lipW; bY = HOME.pitcher.y + L.pFloor - s.pLevel * L.pH; }
+      else if (String(s.dropTarget).startsWith("g")) { a = lipW; bY = HOME.cups[ci].y + cr.cy; }
       else { a = pTipW; bY = HOME.cups[ci].y + cr.cy; }
       const k = (s.drop * 3) % 1;
       R.drop.style.opacity = 1;
@@ -860,11 +872,8 @@
       R.drop.setAttribute("fill", deep);
     } else R.drop.style.opacity = 0;
 
-    // 計時
-    R.timer.style.opacity = s.timer > 0 && s.timer < 1 ? 1 : 0;
-    R.timer.setAttribute("transform", `translate(${HOME.gaiwan.x + 96},${HOME.gaiwan.y - 118})`);
-    R.timerArc.setAttribute("stroke-dashoffset", (119.4 * s.timer).toFixed(1));
-    R.timerText.textContent = s.timerText || "";
+    // 水溫、計時（畫面固定的 HTML 標示，鏡頭推近時不會被裁走）
+    if (R.hud) R.hud(hudTemp, s.timer > 0 && s.timer < 1 ? s.timer : -1, s.timerText || "");
 
     // 標籤
     if (R.onLabel) {
@@ -894,15 +903,15 @@
   function cameraStep(R, s, P, dt) {
     let f = { x: 420, y: 330, z: 1.04 };
     const mid = (a, b, k = 0.5) => ({ x: lerp(a.x, b.x, k), y: lerp(a.y, b.y, k) });
-    if (s.sK > 0.05 || s.kr > 8) { const m = mid(P.tip, P.kTarget, 0.35); f = { x: m.x - 18, y: m.y - 30, z: 1.32 }; }
-    else if (s.sG > 0.05 || s.gr > 10) { const m = mid(P.lipW, P.gTo, 0.5); f = { x: m.x, y: m.y - 10, z: 1.42 }; }
-    else if (s.sP > 0.05 || s.pr > 10) { const m = mid(P.pTipW, P.cupTo, 0.5); f = { x: m.x - 10, y: m.y - 6, z: 1.48 }; }
-    else if (s.lid > 0.02 && s.lid < 0.98 || s.lidX !== 0) f = { x: HOME.gaiwan.x + R.q.bowlRim.cx, y: HOME.gaiwan.y + R.q.bowlRim.cy - 6, z: 1.5 };
-    else if (s.hs > 1.3) f = { x: HOME.chahe.x + s.hx, y: HOME.chahe.y + s.hy - 20, z: 1.25 };
-    else if (s.fall > 0 && s.fall < 1 || (s.hr > 6 && s.hx > 10)) { const m = mid(P.from, P.to, 0.5); f = { x: m.x, y: m.y - 4, z: 1.5 }; }
-    else if (s.c1s > 1.05) f = { x: HOME.cups[1].x + s.c1x, y: HOME.cups[1].y + s.c1y - 30, z: 1.25 };
-    else if (s.ws > 1.1) f = { x: HOME.glass.x + s.wx, y: HOME.glass.y + s.wy - 50, z: 1.3 };
-    else if (s.wr > 10 || s.wLevel > 0.05 && s.mode === "glass" && s.sK > 0) f = { x: HOME.glass.x, y: HOME.glass.y - 50, z: 1.4 };
+    if (s.sK > 0.05 || s.kr > 8) { const m = mid(P.tip, P.kTarget, 0.35); f = { x: m.x - 18, y: m.y - 24, z: 1.62 }; }
+    else if (s.sG > 0.05 || s.gr > 10) { const m = mid(P.lipW, P.gTo, 0.5); f = { x: m.x, y: m.y - 8, z: 1.72 }; }
+    else if (s.sP > 0.05 || s.pr > 10) { const m = mid(P.pTipW, P.cupTo, 0.5); f = { x: m.x - 10, y: m.y - 6, z: 1.8 }; }
+    else if (s.lid > 0.02 && s.lid < 0.98 || s.lidX !== 0) f = { x: HOME.gaiwan.x + R.q.bowlRim.cx, y: HOME.gaiwan.y + R.q.bowlRim.cy - 6, z: 1.9 };
+    else if (s.hs > 1.3) f = { x: HOME.chahe.x + s.hx, y: HOME.chahe.y + s.hy - 20, z: 1.5 };
+    else if (s.fall > 0 && s.fall < 1 || (s.hr > 6 && s.hx > 10)) { const m = mid(P.from, P.to, 0.5); f = { x: m.x, y: m.y - 4, z: 1.8 }; }
+    else if (s.c1s > 1.05) f = { x: HOME.cups[1].x + s.c1x, y: HOME.cups[1].y + s.c1y - 30, z: 1.45 };
+    else if (s.ws > 1.1) f = { x: HOME.glass.x + s.wx, y: HOME.glass.y + s.wy - 50, z: 1.5 };
+    else if (s.wr > 10 || s.wLevel > 0.05 && s.mode === "glass" && s.sK > 0) f = { x: HOME.glass.x, y: HOME.glass.y - 56, z: 1.6 };
     f.x = Math.max(400 / f.z, Math.min(800 - 400 / f.z, f.x));
     f.y = Math.max(250 / f.z, Math.min(500 - 250 / f.z, f.y));
     const C = R.cam0;
@@ -919,8 +928,34 @@
 
   function createStage(svg, opts = {}) {
     let style = GLOBAL_STYLE;
-    let R = null, tea = null, clip = null, clipId = null, t = 0, playing = false, last = 0, raf = 0, speed = 1, visible = true, ready = false, idleTick = 0;
-    const build = () => { R = buildScene(svg, style); R.onLabel = opts.onLabel; R.noCam = reduce; R.camSet = false; };
+    let R = null, tea = null, clip = null, clipId = null, t = 0, playing = false, last = 0, raf = 0, speed = 1, visible = true, ready = false, idleTick = 0, idleSince = 0, hand = null;
+    const wrap = svg.parentNode;
+    const mk = (tag, cls, html) => { const n = document.createElement(tag); n.className = cls; if (html) n.innerHTML = html; wrap.appendChild(n); return n; };
+    const hudTemp = mk("span", "cu-temp");
+    const hudTimer = mk("span", "cu-timer", '<svg viewBox="0 0 44 44" aria-hidden="true"><circle cx="22" cy="22" r="19"/><circle class="arc" cx="22" cy="22" r="19"/></svg><b></b>');
+    const hudArc = hudTimer.querySelector(".arc"), hudTimerText = hudTimer.querySelector("b");
+    const handBox = mk("figure", "cu-hand", '<img alt="" decoding="async"><figcaption></figcaption>');
+    const handImg = handBox.querySelector("img"), handCap = handBox.querySelector("figcaption");
+    const note = mk("span", "cu-note", "示範已加快");
+    let hudLast = "";
+    function hud(temp, frac, text) {
+      const key = temp + "|" + (frac < 0 ? -1 : frac.toFixed(2)) + "|" + text;
+      if (key === hudLast) return;
+      hudLast = key;
+      hudTemp.textContent = temp; hudTemp.classList.toggle("on", !!temp);
+      hudTimer.classList.toggle("on", frac >= 0);
+      note.classList.toggle("on", frac >= 0);
+      if (frac >= 0) { hudArc.style.strokeDashoffset = (119.4 * frac).toFixed(1); hudTimerText.textContent = text; }
+    }
+    function paintHand() {
+      handBox.classList.toggle("has", !!hand);
+      if (!hand) return;
+      const src = `assets/img/hands/${hand.id}-${style}.webp`;
+      if (handImg.getAttribute("src") !== src) handImg.src = src;
+      handImg.alt = hand.alt || hand.cap;
+      handCap.textContent = hand.cap;
+    }
+    const build = () => { R = buildScene(svg, style); R.onLabel = opts.onLabel; R.noCam = reduce; R.camSet = false; R.hud = hud; hudLast = ""; paintHand(); };
     function frame(now) {
       raf = 0;
       if (!ready) return;
@@ -934,16 +969,20 @@
         }
       }
       last = now;
-      if (clip && (playing || (idleTick++ & 1) === 0)) {
+      if (clip && (playing || (idleTick++ % 3) === 0)) {
         const s = clip.sample(t);
         render(R, s, tea, reduce ? 0 : now, dtRaw, reduce);
         opts.onFrame && opts.onFrame(s, playing, tea);
       }
       opts.onProgress && clip && opts.onProgress(t / clip.dur);
-      if (playing || (visible && !reduce && !document.hidden)) raf = requestAnimationFrame(frame);
+      const handOn = !!hand && !!clip && t >= Math.min(hand.at || 0.8, clip.dur);
+      if (handOn !== handBox.classList.contains("on")) { handBox.classList.toggle("on", handOn); hudTemp.style.visibility = handOn ? "hidden" : ""; }
+      if (playing) idleSince = now;
+      // 暫停或播完後只保留約 12 秒的輕微水氣，之後停止重繪以省電
+      if (playing || (visible && !reduce && !document.hidden && now - idleSince < 12000)) raf = requestAnimationFrame(frame);
     }
     function setRun(on) { svg.classList.toggle("is-playing", on); }
-    function kick() { if (!raf && ready) raf = requestAnimationFrame((n) => { last = n; frame(n); }); }
+    function kick() { if (!raf && ready) raf = requestAnimationFrame((n) => { last = n; idleSince = n; frame(n); }); }
     function boot() {
       ready = false;
       svg.classList.add("is-loading");
@@ -962,8 +1001,9 @@
     styleListeners.push((st) => { if (st !== style) { style = st; boot(); } });
     const booted = boot();
     return {
-      load(newTea, id, autoplay) {
+      load(newTea, id, autoplay, handInfo) {
         tea = newTea; clipId = id; clip = buildClip(id, tea);
+        hand = handInfo || null; paintHand(); handBox.classList.remove("on"); hudTemp.style.visibility = "";
         t = 0; playing = !!autoplay;
         if (!autoplay) t = reduce || id === "prepare" ? clip.dur : 0;
         last = performance.now(); setRun(playing);

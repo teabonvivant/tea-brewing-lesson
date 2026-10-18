@@ -257,8 +257,44 @@ a { color: inherit; }
 .foot-brand { font-family: var(--serif); font-size: 18px; color: #fbf1dc; margin-bottom: 8px; letter-spacing: .08em; }
 .foot-note { font-size: 14px; max-width: 52em; line-height: 1.8; }
 
+/* 特寫：水溫、計時、手勢定格（HTML 標示，鏡頭推近時不被裁走） */
+.cu-temp { position: absolute; left: 12px; bottom: 12px; padding: 4px 12px; border-radius: 999px; background: rgba(36, 25, 17, .82); border: 1px solid rgba(226, 184, 102, .5); color: #f6e7c8; font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; opacity: 0; transition: opacity .2s var(--ease); pointer-events: none; }
+.cu-timer { position: absolute; right: 12px; top: 12px; width: 58px; height: 58px; display: grid; place-items: center; border-radius: 50%; background: rgba(36, 25, 17, .82); opacity: 0; transition: opacity .2s var(--ease); pointer-events: none; }
+.cu-timer svg { position: absolute; inset: 7px; transform: rotate(-90deg); }
+.cu-timer circle { fill: none; stroke: #6d5a48; stroke-width: 4; }
+.cu-timer .arc { stroke: #e2b866; stroke-dasharray: 119.4; stroke-linecap: round; }
+.cu-timer b { position: relative; color: #f6e7c8; font-size: 12px; font-weight: 600; }
+.cu-note { position: absolute; right: 12px; top: 76px; padding: 2px 8px; border-radius: 999px; background: rgba(36, 25, 17, .7); color: #e9d9bb; font-size: 11px; opacity: 0; transition: opacity .2s var(--ease); pointer-events: none; }
+.cu-temp.on, .cu-timer.on, .cu-note.on { opacity: 1; }
+.cu-hand { position: absolute; left: 10px; bottom: 10px; width: 32%; max-width: 190px; margin: 0; border-radius: 12px; overflow: hidden; background: #241912; box-shadow: 0 6px 18px rgba(0, 0, 0, .35); border: 1px solid rgba(251, 241, 220, .35); opacity: 0; transform: translateY(6px); transition: opacity .25s var(--ease), transform .25s var(--ease); pointer-events: none; }
+.cu-hand.has.on { opacity: 1; transform: none; }
+.cu-hand img { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; }
+.cu-hand figcaption { padding: 5px 8px 6px; color: #fbf1dc; font-size: 12px; line-height: 1.4; }
+.cu-label { word-break: keep-all; overflow-wrap: anywhere; text-wrap: balance; }
+.demo-note { margin-top: 10px; font-size: 13px; color: var(--ink-3); }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.nav-cta { background: var(--night); color: #fbf1dc !important; }
+.nav-cta:hover { background: #4a3626 !important; }
+.td-btn.ghost { background: transparent; color: var(--tea); box-shadow: inset 0 0 0 1.5px var(--tea); text-decoration: none; }
+.td-btn.ghost:hover { background: #f1e3cf; }
+a.td-btn { text-decoration: none; }
+.q-acts { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.tool-img { display: grid; place-items: center; height: 96px; margin-bottom: 10px; }
+.tool-img img { max-width: 120px; max-height: 96px; object-fit: contain; filter: drop-shadow(0 6px 8px rgba(60, 35, 15, .18)); }
+.sec-learn { background: var(--night); color: #fbf1dc; }
+.sec-learn .eyebrow { color: #e2b866; }
+.sec-learn .sec-title { color: #fbf1dc; }
+.sec-learn .sec-lede { color: #e2d4bd; margin-bottom: 0; }
+.learn { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 32px; align-items: center; }
+.learn-acts { display: grid; gap: 12px; justify-items: start; }
+.learn-acts .td-btn { background: #c8913f; color: #241912; }
+.learn-acts .td-btn:hover { background: #ddb066; }
+.learn-acts .td-btn.ghost { background: transparent; color: #fbf1dc; box-shadow: inset 0 0 0 1.5px #e2b866; }
+.learn-acts .td-btn.ghost:hover { background: rgba(255, 255, 255, .08); }
+.learn-acts small { color: #cdbda3; }
+
 /* 內嵌模式 */
-.embed .top, .embed .foot-brand { display: none; }
+.embed .top, .embed .foot-brand, .embed #learn { display: none; }
 .embed .demo { padding-top: 20px; }
 
 @media (max-width: 1080px) {
@@ -283,6 +319,20 @@ a { color: inherit; }
   .demo { padding: 20px 0 40px; }
   .demo-head { grid-template-columns: 1fr; gap: 8px; }
   .side { grid-template-columns: 1fr; }
+  /* 手機：場景圖之下即見特寫，再接控制列與步驟 */
+  .main-col, .side { display: contents; }
+  .theatre { gap: 12px; }
+  .scene { order: 1; }
+  .closeup { order: 2; }
+  .controls { order: 3; }
+  .steps { order: 4; }
+  .step-card { order: 5; }
+  .cu-hand { width: 38%; }
+  .cu-hand figcaption { font-size: 11px; padding: 4px 6px 5px; }
+  .cu-temp { font-size: 12px; left: 8px; bottom: 8px; }
+  .cu-timer { width: 50px; height: 50px; right: 8px; top: 8px; }
+  .cu-note { top: 62px; right: 8px; }
+  .learn { grid-template-columns: 1fr; gap: 20px; }
   .scene-cap { left: 10px; bottom: 10px; font-size: 15px; padding: 6px 14px 6px 6px; }
   .scene-no { width: 28px; height: 28px; }
   .step-card { padding: 18px; }

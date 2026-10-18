@@ -7,14 +7,16 @@
 <meta name="description" content="由溫杯、賞茶、投茶到奉茶品茗，逐步演示中國茶藝泡茶流程；附八種茶的泡法、水溫、茶性、適合人群及歷史，以及常用沖泡技巧。">
 <meta property="og:title" content="茶席・中國茶藝泡茶流程教學">
 <meta property="og:description" content="逐步演示泡茶流程，認識八種茶的泡法、水溫、茶性與歷史。">
-<meta property="og:image" content="assets/img/og.jpg">
+<meta property="og:image" content="https://teabonvivant.github.io/tea-brewing-lesson/assets/img/og.jpg">
+<meta property="og:url" content="https://teabonvivant.github.io/tea-brewing-lesson/">
+<link rel="canonical" href="https://teabonvivant.github.io/tea-brewing-lesson/">
 <meta property="og:type" content="website">
 <meta name="theme-color" content="#2b241e">
 <meta name="robots" content="noindex">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%238d2f22'/%3E%3Cpath d='M18 30h28c-1 10-6 16-14 16s-13-6-14-16zM46 33c6 0 6 8-1 8M24 50h16' fill='none' stroke='%23fbeee0' stroke-width='3.5' stroke-linecap='round'/%3E%3C/svg%3E">
 <link rel="preload" href="assets/fonts/tea-serif.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" as="image" href="assets/img/scene/greet-960.webp" imagesrcset="assets/img/scene/greet-960.webp 960w, assets/img/scene/greet-1536.webp 1536w" imagesizes="(min-width: 1080px) 60vw, 100vw">
-<link rel="stylesheet" href="assets/css/app.css?v=20261018">
+<link rel="stylesheet" href="assets/css/app.css?v=20261018b">
 </head>
 <body>
 <a class="skip" href="#demo">跳到示範</a>
@@ -25,7 +27,7 @@
       <span class="brand-text"><b>茶席</b><small>中國茶藝泡茶流程教學</small></span>
     </a>
     <nav class="top-nav" aria-label="章節">
-      <a href="#demo">示範</a><a href="#teas">茶類</a><a href="#skills">技巧</a><a href="#water">水溫</a><a href="#tools">茶具</a><a href="#quiz">測驗</a>
+      <a href="#demo">示範</a><a href="#teas">茶類</a><a href="#skills">技巧</a><a href="#water">水溫</a><a href="#tools">茶具</a><a href="#quiz">測驗</a><a href="#learn" class="nav-cta">報名</a>
     </nav>
   </div>
 </header>
@@ -66,7 +68,7 @@
             <div class="closeup-head">
               <span class="tag">手法特寫</span>
               <div class="closeup-tools">
-                <div class="seg" role="group" aria-label="畫面風格">
+                <div class="seg" role="group" aria-label="特寫畫面風格">
                   <button type="button" id="styleR" aria-pressed="true">寫實</button>
                   <button type="button" id="styleI" aria-pressed="false">繪本</button>
                 </div>
@@ -96,7 +98,7 @@
             <ul class="points" id="stepPoints"></ul>
             <div class="mistake"><b>常見錯誤</b><span id="stepMistake"></span></div>
             <div class="timer" id="timer" hidden>
-              <div class="timer-ring" aria-hidden="true"><svg viewBox="0 0 44 44"><circle cx="22" cy="22" r="19"/><circle id="timerArc" cx="22" cy="22" r="19"/></svg><span id="timerNum">10</span></div>
+              <div class="timer-ring" role="timer" aria-label="剩餘秒數"><svg viewBox="0 0 44 44" aria-hidden="true"><circle cx="22" cy="22" r="19"/><circle id="timerArc" cx="22" cy="22" r="19"/></svg><span id="timerNum">10</span></div>
               <div class="timer-body">
                 <b>泡茶計時器</b>
                 <div class="timer-row">
@@ -106,6 +108,7 @@
                   <button class="mini-btn primary" id="timerGo" type="button">開始</button>
                 </div>
                 <small id="timerNote"></small>
+                <span class="sr-only" id="timerStatus" role="status"></span>
               </div>
             </div>
           </article>
@@ -113,6 +116,7 @@
       </div>
 
       <dl class="params" id="params"></dl>
+      <p class="demo-note">特寫動畫已把浸泡時間加快示範；實際沖泡請以上方計時器的秒數為準。</p>
     </div>
   </section>
 
@@ -120,7 +124,7 @@
     <div class="wrap">
       <p class="eyebrow">茶類百科</p>
       <h2 id="teas-title" class="sec-title">八種茶，八種性情</h2>
-      <p class="sec-lede">按發酵程度由輕到重排列。點選一款茶，看它的泡法、茶性、適合人群與歷史。</p>
+      <p class="sec-lede">六大基本茶類大致按發酵程度由輕到重排列；普洱生茶以曬青毛茶自然陳化，茉莉花茶屬再加工茶，另列於後。點選一款茶，看它的泡法、茶性、適合人群與歷史。</p>
       <div class="tea-grid" id="teaGrid"></div>
       <article class="tea-detail" id="teaDetail" aria-live="polite"></article>
     </div>
@@ -171,6 +175,22 @@
       <div class="quiz" id="quizBox"></div>
     </div>
   </section>
+  <section id="learn" class="sec sec-learn" aria-labelledby="learn-title">
+    <div class="wrap">
+      <div class="learn">
+        <div>
+          <p class="eyebrow">茶藝課程</p>
+          <h2 id="learn-title" class="sec-title">看過示範，再親手泡一席茶</h2>
+          <p class="sec-lede">水溫、手勢、出湯的節奏，要在老師身邊練過才穩。香港古樹茶文化學會的茶藝課在佐敦及屯門上課，由認識茶類到完整茶席，逐步帶你練習。</p>
+        </div>
+        <div class="learn-acts">
+          <a class="td-btn" href="https://wa.me/85263802761?text=%E4%BD%A0%E5%A5%BD%EF%BC%8C%E6%88%91%E6%83%B3%E6%9F%A5%E8%A9%A2%E8%8C%B6%E8%97%9D%E8%AA%B2%E7%A8%8B" target="_blank" rel="noopener">WhatsApp 唐老師查詢</a>
+          <a class="td-btn ghost" href="https://www.organict.net/teaclass" target="_blank" rel="noopener">看課程及上課時間</a>
+          <small>WhatsApp：6380 2761（唐老師）</small>
+        </div>
+      </div>
+    </div>
+  </section>
 </main>
 
 <footer class="foot">
@@ -180,10 +200,10 @@
   </div>
 </footer>
 
-<script src="assets/js/data.js?v=20261018"></script>
-<script src="assets/js/kit.js?v=20261018"></script>
-<script src="assets/js/audio.js?v=20261018"></script>
-<script src="assets/js/stage.js?v=20261018"></script>
-<script src="assets/js/app.js?v=20261018"></script>
+<script src="assets/js/data.js?v=20261018b"></script>
+<script src="assets/js/kit.js?v=20261018b"></script>
+<script src="assets/js/audio.js?v=20261018b"></script>
+<script src="assets/js/stage.js?v=20261018b"></script>
+<script src="assets/js/app.js?v=20261018b"></script>
 </body>
 </html>

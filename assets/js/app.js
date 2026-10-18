@@ -31,6 +31,7 @@
       if (!state.auto) return;
       clearTimeout(autoTimer);
       autoTimer = setTimeout(() => {
+        if (!state.auto) return;
         if (state.step < visibleSteps().length - 1) goStep(state.step + 1, true);
         else { state.auto = false; $("autoBtn").checked = false; }
       }, 1400);
@@ -79,8 +80,20 @@
     decant: "茶藝師以三指法持蓋碗，把茶湯倒入公道杯",
     share: "茶藝師持公道杯，低斟茶湯入品茗杯",
     offer: "茶藝師微微欠身，雙手奉上一杯茶",
-    sip: "茶藝師雙手持杯，閉目聞香品茗"
+    sip: "茶藝師雙手持杯，閉目聞香品茗",
+    "kettle-g": "茶藝師提起銅壺，沿杯壁向玻璃杯低注熱水，杯中綠茶舒展",
+    "scoop-g": "茶藝師以茶匙把茶荷中的綠茶撥入已注水三分一的玻璃杯",
+    "offer-g": "茶藝師微微欠身，雙手捧上一杯玻璃杯綠茶",
+    "sip-g": "茶藝師雙手持玻璃杯，閉目聞香"
   };
+  const GLASS_POSE = { kettle: "kettle-g", pourHigh: "kettle-g", scoop: "scoop-g", offer: "offer-g", sip: "sip-g" };
+  /* 手勢定格：特寫畫面角落顯示真實手勢 */
+  const HANDS = {
+    grip: { id: "grip", cap: "三指法：拇指、中指扣碗沿，食指按蓋鈕", alt: "右手以三指法持蓋碗，食指按蓋鈕，向公道杯出湯" },
+    serve: { id: "serve", cap: "奉茶：一手托杯底，一手輕扶杯身，不碰杯口", alt: "雙手奉上一杯茶，一手托底，一手輕扶杯身" },
+    knock: { id: "knock", cap: "叩指禮：食指中指併攏，輕叩桌面", alt: "客人食指與中指併攏，輕叩桌面致謝" }
+  };
+  const stepHand = (s, t) => (s.id === "pour" ? HANDS.grip : s.id === "serve" && t.vessel !== "glass" ? HANDS.serve : null);
 
   function renderSteps() {
     const list = visibleSteps();
@@ -93,7 +106,7 @@
     const list = visibleSteps();
     state.step = Math.max(0, Math.min(list.length - 1, i));
     const s = list[state.step], t = state.tea;
-    const pose = t.vessel === "glass" && ["pourHigh"].includes(s.pose) ? "kettle" : s.pose;
+    const pose = t.vessel === "glass" ? GLASS_POSE[s.pose] || s.pose : s.pose;
     setPose(pose);
     $("sceneA").alt = $("sceneA").classList.contains("is-on") ? POSE_ALT[pose] : "";
     $("sceneB").alt = $("sceneB").classList.contains("is-on") ? POSE_ALT[pose] : "";
@@ -121,9 +134,9 @@
     $("timer").hidden = !showTimer;
     if (showTimer) resetTimer(s.id === "again" ? 2 : 1);
     $("stage").setAttribute("aria-label", `${s.name}的手法特寫動畫`);
-    stage.load(t, s.clip, !!autoplay);
+    stage.load(t, s.clip, !!autoplay, stepHand(s, t));
     const next = list[state.step + 1];
-    if (next) preload(next.pose);
+    if (next) preload(t.vessel === "glass" ? GLASS_POSE[next.pose] || next.pose : next.pose);
     if (state.step > 0 || autoplay) syncUrl();
   }
 
@@ -134,13 +147,14 @@
     return t.steeps.first + t.steeps.add * (n - 1);
   }
   function resetTimer(n) {
-    clearInterval(tm.id);
+    clearInterval(tm.id); tm.id = 0;
     tm.n = Math.max(1, Math.min(15, n));
     tm.total = tm.left = infTime(tm.n);
     $("infLabel").textContent = `第 ${tm.n} 泡`;
     $("timerNum").textContent = tm.left;
     $("timerArc").style.strokeDashoffset = 0;
     $("timerGo").textContent = "開始";
+    $("timerStatus").textContent = "";
     $("timer").classList.remove("done");
     const t = state.tea;
     $("timerNote").textContent = t.vessel === "glass" ? "玻璃杯：浸泡後即可品飲，剩三分一便續水" : `${t.name}：首泡 ${t.steeps.first} 秒，${t.steeps.unit}`;
@@ -153,7 +167,8 @@
       clearInterval(tm.id); tm.id = 0;
       $("timerNum").textContent = "出湯";
       $("timer").classList.add("done");
-      $("timerGo").textContent = "重設";
+      $("timerGo").textContent = "下一泡";
+      $("timerStatus").textContent = `第 ${tm.n} 泡時間到，請出湯`;
       chime();
     }
   }
@@ -229,14 +244,14 @@
   });
   $("steps").addEventListener("click", (e) => {
     const b = e.target.closest("[data-i]");
-    if (b) goStep(+b.dataset.i, true);
+    if (b) { goStep(+b.dataset.i, true); showCloseup(); }
   });
-  $("prevBtn").onclick = () => goStep(state.step - 1, true);
-  $("nextBtn").onclick = () => goStep(state.step + 1, true);
+  $("prevBtn").onclick = () => { goStep(state.step - 1, true); showCloseup(); };
+  $("nextBtn").onclick = () => { goStep(state.step + 1, true); showCloseup(); };
   /* 畫面風格、音效、背景音樂 */
   const paintStyle = () => { const st = TeaStage.getStyle(); $("styleR").setAttribute("aria-pressed", st === "R"); $("styleI").setAttribute("aria-pressed", st === "I"); };
-  $("styleR").onclick = () => { TeaStage.setStyle("R"); paintStyle(); };
-  $("styleI").onclick = () => { TeaStage.setStyle("I"); paintStyle(); };
+  $("styleR").onclick = () => { TeaStage.setStyle("R"); paintStyle(); renderTools(); };
+  $("styleI").onclick = () => { TeaStage.setStyle("I"); paintStyle(); renderTools(); };
   paintStyle();
   if (window.TeaAudio) {
     const paintAudio = (a) => {
@@ -247,7 +262,12 @@
     $("sfxBtn").onclick = () => TeaAudio.setSfx(!TeaAudio.sfx);
     $("musicBtn").onclick = () => TeaAudio.setMusic(!TeaAudio.music);
   } else { $("sfxBtn").hidden = $("musicBtn").hidden = true; }
-  $("playBtn").onclick = () => stage.toggle();
+  const showCloseup = () => {
+    if (innerWidth > 760) return;
+    const r = $("stage").getBoundingClientRect();
+    if (r.top < 60 || r.bottom > innerHeight - 140) $("stage").closest(".closeup").scrollIntoView({ block: "center", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+  };
+  $("playBtn").onclick = () => { stage.toggle(); if (stage.playing) showCloseup(); };
   $("replayBtn").onclick = () => stage.replay();
   $("speedBtn").onclick = () => {
     state.speed = state.speed === 1 ? 0.5 : state.speed === 0.5 ? 1.5 : 1;
@@ -257,7 +277,8 @@
   };
   $("autoBtn").onchange = (e) => {
     state.auto = e.target.checked;
-    if (state.auto && !stage.playing) stage.replay();
+    if (!state.auto) { clearTimeout(autoTimer); return; }
+    if (!stage.playing) stage.replay();
   };
   document.addEventListener("keydown", (e) => {
     if (e.target.closest("input, textarea, [role=radiogroup], [role=tablist]")) return;
@@ -308,13 +329,20 @@
     }
     $("teaDetail").innerHTML = `<div class="td-head"><div><h3>${esc(t.name)}</h3><p>${esc(t.family)}・示範用茶：${esc(t.sample)}</p></div>
       <button class="td-btn" type="button" id="tdDemo">用這款茶示範泡法</button></div>
-      <div class="td-tabs" role="tablist" aria-label="${esc(t.name)}資料">${tabs.map(([k, n]) => `<button class="td-tab" type="button" role="tab" data-tab="${k}" aria-selected="${k === detailTab}">${n}</button>`).join("")}</div>
-      <div role="tabpanel">${body}</div>`;
+      <div class="td-tabs" role="tablist" aria-label="${esc(t.name)}資料">${tabs.map(([k, n]) => `<button class="td-tab" type="button" role="tab" id="tdtab-${k}" aria-controls="tdpanel" data-tab="${k}" aria-selected="${k === detailTab}" tabindex="${k === detailTab ? 0 : -1}">${n}</button>`).join("")}</div>
+      <div role="tabpanel" id="tdpanel" aria-labelledby="tdtab-${detailTab}" tabindex="0">${body}</div>`;
   }
   $("teaGrid").addEventListener("click", (e) => {
     const b = e.target.closest("[data-tea]");
     if (!b) return;
     setTea(b.dataset.tea, true);
+  });
+  $("teaDetail").addEventListener("keydown", (e) => {
+    if (!e.target.closest("[data-tab]") || !["ArrowRight", "ArrowLeft", "Home", "End"].includes(e.key)) return;
+    const keys = ["brew", "nature", "people", "history"];
+    const i = keys.indexOf(detailTab);
+    detailTab = keys[e.key === "Home" ? 0 : e.key === "End" ? 3 : (i + (e.key === "ArrowRight" ? 1 : 3)) % 4];
+    renderTeaDetail(); document.querySelector(`[data-tab="${detailTab}"]`).focus(); e.preventDefault();
   });
   $("teaDetail").addEventListener("click", (e) => {
     const tab = e.target.closest("[data-tab]");
@@ -326,24 +354,25 @@
   });
 
   /* ---------- 技巧 ---------- */
-  const stage2 = TeaStage.createStage($("stage2"), { onLabel: (tx) => setLabel($("cuLabel2"), tx), onFrame: (st, playing) => window.TeaAudio && TeaAudio.feed("skill", st, playing) });
+  const stage2 = window.__teaStage2 = TeaStage.createStage($("stage2"), { onLabel: (tx) => setLabel($("cuLabel2"), tx), onFrame: (st, playing) => window.TeaAudio && TeaAudio.feed("skill", st, playing) });
   const skillTea = (sk) => (sk.clip === "phoenix" ? D.teas[0] : D.teas.find((t) => t.id === "oolong"));
   let skillIdx = 0;
   function renderSkills() {
     $("skillList").innerHTML = D.techniques
-      .map((s, i) => `<button class="skill-tab" type="button" role="tab" data-k="${i}" aria-selected="${i === skillIdx}">${esc(s.name)}</button>`)
+      .map((s, i) => `<button class="skill-tab" type="button" role="tab" id="sktab-${i}" aria-controls="skillBody" data-k="${i}" aria-selected="${i === skillIdx}" tabindex="${i === skillIdx ? 0 : -1}">${esc(s.name)}</button>`)
       .join("");
   }
   function showSkill(i, play) {
     skillIdx = i;
     const s = D.techniques[i];
-    document.querySelectorAll(".skill-tab").forEach((b, k) => b.setAttribute("aria-selected", k === i));
+    document.querySelectorAll(".skill-tab").forEach((b, k) => { b.setAttribute("aria-selected", k === i); b.tabIndex = k === i ? 0 : -1; });
+    $("skillBody").setAttribute("aria-labelledby", `sktab-${i}`);
     $("skillBody").innerHTML = `<h3>${esc(s.name)}</h3><p>${esc(s.what)}</p>
       <h4 class="mini-h">做法</h4><ol>${s.how.map((h) => `<li>${esc(h)}</li>`).join("")}</ol>
       <h4 class="mini-h">為甚麼</h4><p style="color:var(--ink-2);margin-bottom:12px">${esc(s.why)}</p>
       <div class="mistake"><b>常見錯誤</b><span>${esc(s.mistake)}</span></div>`;
     $("stage2").setAttribute("aria-label", `${s.name}特寫動畫`);
-    stage2.load(skillTea(s), s.clip, play);
+    stage2.load(skillTea(s), s.clip, play, s.id === "grip" ? HANDS.grip : s.id === "knock" ? HANDS.knock : null);
   }
   $("skillList").addEventListener("click", (e) => {
     const b = e.target.closest("[data-k]");
@@ -381,19 +410,11 @@
   }
 
   /* ---------- 茶具 ---------- */
-  const ICON = {
-    gaiwan: '<path d="M14 18c4-6 32-6 36 0M10 22c6 14 38 14 44 0zM20 40h24M14 44c8 3 28 3 36 0M30 10h4v4h-4z"/>',
-    pitcher: '<path d="M18 10h26l6-3-2 6c-2 2-2 4-2 6l-2 25H20L18 10zM18 16c-8 0-8 16 1 16"/>',
-    cup: '<path d="M14 18h36c-2 14-8 22-18 22S16 32 14 18zM24 42h16"/>',
-    chahe: '<path d="M8 28c10-10 38-12 48-4-8 8-38 12-48 4zM20 25l6-3M30 24l7-2M38 25l5-2"/>',
-    chaze: '<path d="M10 34l34-16c4-2 8 2 6 6L20 38c-6 2-12 0-10-4zM46 12v30M54 12v30"/>',
-    kettle: '<path d="M16 42c-6-10-2-24 16-24s22 14 16 24zM48 30l8-10M20 18c0-10 24-10 24 0M28 12h8"/>',
-    glass: '<path d="M20 8h24l-2 36H22zM22 22h20"/>',
-    towel: '<path d="M10 16h44v22H10zM10 24h44M10 30h44"/>'
-  };
+  const TOOL_IMG = { gaiwan: "tools/gaiwan", pitcher: "kit/{s}/pitcher", cup: "kit/{s}/cup", chahe: "kit/{s}/chahe", chaze: "kit/{s}/scoop", kettle: "kit/{s}/kettle", glass: "kit/{s}/tumbler", towel: "kit/{s}/towel" };
   function renderTools() {
+    const st = TeaStage.getStyle();
     $("toolGrid").innerHTML = D.tools
-      .map((t) => `<div class="tool"><svg viewBox="0 0 64 48" aria-hidden="true" fill="none" stroke="#7a4a2a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICON[t.id]}</svg>
+      .map((t) => `<div class="tool"><span class="tool-img" aria-hidden="true"><img src="assets/img/${TOOL_IMG[t.id].replace("{s}", st)}${t.id === "gaiwan" ? "-" + st : ""}.webp" alt="" loading="lazy" decoding="async"></span>
         <h3>${esc(t.name)}${t.alias ? `<small>${esc(t.alias)}</small>` : ""}</h3><p>${esc(t.desc)}</p></div>`)
       .join("");
   }
@@ -403,8 +424,9 @@
   function renderQuiz() {
     const box = $("quizBox");
     if (qi >= D.quiz.length) {
-      const msg = score === D.quiz.length ? "全部答對，可以為朋友泡一席好茶了。" : score >= 6 ? "基礎紮實，回看答錯的部分便更完整。" : "再看一次示範和茶類百科，很快便能掌握。";
-      box.innerHTML = `<div class="q-score"><b>${score} / ${D.quiz.length}</b><p>${msg}</p><button class="td-btn" type="button" id="qAgain">再做一次</button></div>`;
+      const msg = score === D.quiz.length ? "全部答對，基本流程和要點已經記熟。下一步是親手練習，水溫、手勢和出湯時間要靠實際沖泡掌握。" : score >= 6 ? "基礎紮實，回看答錯的部分便更完整。" : "再看一次示範和茶類百科，很快便能掌握。";
+      const cta = document.documentElement.classList.contains("embed") ? "" : `<a class="td-btn ghost" href="#learn">親手學泡茶</a>`;
+      box.innerHTML = `<div class="q-score"><b>${score} / ${D.quiz.length}</b><p>${msg}</p><div class="q-acts"><button class="td-btn" type="button" id="qAgain">再做一次</button>${cta}</div></div>`;
       $("qAgain").onclick = () => { qi = 0; score = 0; renderQuiz(); $("quizBox").querySelector("button").focus(); };
       return;
     }
