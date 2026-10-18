@@ -257,11 +257,14 @@
     const paintAudio = (a) => {
       $("sfxBtn").setAttribute("aria-pressed", a.sfx); $("sfxBtn").setAttribute("aria-label", a.sfx ? "音效：開" : "音效：關");
       $("musicBtn").setAttribute("aria-pressed", a.music); $("musicBtn").setAttribute("aria-label", a.music ? "背景音樂：開" : "背景音樂：關");
+      $("trackSel").hidden = !a.music; $("trackSel").value = a.track;
     };
+    $("trackSel").innerHTML = TeaAudio.tracks.map((t) => `<option value="${t.id}">${t.name}</option>`).join("");
+    $("trackSel").onchange = (e) => TeaAudio.setTrack(e.target.value);
     TeaAudio.onChange(paintAudio);
     $("sfxBtn").onclick = () => TeaAudio.setSfx(!TeaAudio.sfx);
     $("musicBtn").onclick = () => TeaAudio.setMusic(!TeaAudio.music);
-  } else { $("sfxBtn").hidden = $("musicBtn").hidden = true; }
+  } else { $("sfxBtn").hidden = $("musicBtn").hidden = $("trackSel").hidden = true; }
   const showCloseup = () => {
     if (innerWidth > 760) return;
     const r = $("stage").getBoundingClientRect();

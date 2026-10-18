@@ -1,11 +1,16 @@
-/* 茶席音效與背景音樂。音效全部由 Web Audio 即時合成（不載入音檔），背景音樂為自製循環樂曲。預設靜音，須按掣開啟。 */
+/* 茶席音效與背景音樂。音效全部由 Web Audio 即時合成（不載入音檔），背景音樂為古琴古曲（加廳堂殘響），按清單連播。預設靜音，須按掣開啟。 */
 (function () {
   const KEY = "tea-audio";
-  const MUSIC_SRC = "assets/audio/tea-music.mp3";
-  const prefs = (() => { try { return Object.assign({ sfx: false, music: false }, JSON.parse(localStorage.getItem(KEY) || "{}")); } catch (e) { return { sfx: false, music: false }; } })();
+  const TRACKS = [
+    { id: "pingsha", name: "平沙落雁" }, { id: "liushui", name: "流水" }, { id: "peilan", name: "佩蘭" },
+    { id: "kongzi", name: "孔子讀易" }, { id: "qiufeng", name: "秋風詞" }
+  ];
+  const trackSrc = (id) => `assets/audio/guqin-${id}.mp3`;
+  const prefs = (() => { try { return Object.assign({ sfx: false, music: false, track: "pingsha" }, JSON.parse(localStorage.getItem(KEY) || "{}")); } catch (e) { return { sfx: false, music: false, track: "pingsha" }; } })();
+  if (!TRACKS.some((t) => t.id === prefs.track)) prefs.track = TRACKS[0].id;
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(prefs)); } catch (e) {} };
   const listeners = [];
-  const emitChange = () => listeners.forEach((f) => f({ sfx: prefs.sfx, music: prefs.music }));
+  const emitChange = () => listeners.forEach((f) => f({ sfx: prefs.sfx, music: prefs.music, track: prefs.track }));
 
   let ctx = null, master = null, sfxBus = null, noise = null, pourBand = null, pourGain = null, burbleGain = null, simGain = null;
   let musicEl = null, fadeTimer = 0;
@@ -123,12 +128,22 @@
     }, 40);
   }
   function startMusic() {
-    if (!musicEl) { musicEl = new Audio(MUSIC_SRC); musicEl.loop = true; musicEl.preload = "auto"; musicEl.volume = 0; }
+    if (!musicEl) {
+      musicEl = new Audio(trackSrc(prefs.track)); musicEl.preload = "auto"; musicEl.volume = 0;
+      musicEl.addEventListener("ended", () => { const i = TRACKS.findIndex((t) => t.id === prefs.track); setTrack(TRACKS[(i + 1) % TRACKS.length].id, true); });
+    }
     const p = musicEl.play();
     if (p && p.catch) p.catch(() => { /* 瀏覽器要求先有點擊：下一次點擊時再試 */ armUnlock(); });
     fade(0.32, 1800);
   }
   function stopMusic() { if (!musicEl) return; fade(0, 700, () => musicEl.pause()); }
+  function setTrack(id, fromEnd) {
+    if (!TRACKS.some((t) => t.id === id)) return;
+    prefs.track = id; save(); emitChange();
+    if (!musicEl) return;
+    const swap = () => { musicEl.src = trackSrc(id); if (prefs.music) startMusic(); };
+    if (fromEnd || musicEl.paused) swap(); else fade(0, 500, swap);
+  }
   let armed = false;
   function armUnlock() {
     if (armed) return; armed = true;
@@ -151,9 +166,12 @@
       emitChange();
     },
     setMusic(on) { prefs.music = !!on; save(); on ? startMusic() : stopMusic(); emitChange(); },
-    onChange(f) { listeners.push(f); f({ sfx: prefs.sfx, music: prefs.music }); },
+    tracks: TRACKS,
+    get track() { return prefs.track; },
+    setTrack,
+    onChange(f) { listeners.push(f); f({ sfx: prefs.sfx, music: prefs.music, track: prefs.track }); },
     unlock: armUnlock,
-    _dbg: () => ({ state: ctx && ctx.state, pour: pourGain && pourGain.gain.value, band: pourBand && pourBand.frequency.value, music: musicEl && { paused: musicEl.paused, vol: musicEl.volume, t: musicEl.currentTime } })
+    _dbg: () => ({ state: ctx && ctx.state, pour: pourGain && pourGain.gain.value, band: pourBand && pourBand.frequency.value, music: musicEl && { paused: musicEl.paused, vol: musicEl.volume, t: musicEl.currentTime, src: musicEl.src } })
   };
   if (prefs.sfx || prefs.music) armUnlock();
 })();
