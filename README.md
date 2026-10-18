@@ -77,3 +77,11 @@ addEventListener("message", (e) => {
 - 背景重做：深色木茶盤、兩端可見（`assets/img/kit/R|I/bg.webp`，Codex 生成；舊版備份在 `_work/kit/orig/`，生成腳本 `_work/gen4/run.py`、`run2.py`，去背 `_work/gen4/cut4.py`）。
 - 蓋碗在備具、賞茶、分茶、奉茶、品茗時合蓋；注水、投茶、潤茶、續水開頭先開蓋。巡城／點兵時蓋碗疊在杯排之前。奉茶落在客人右前方。
 - 測試：`_work/tools/e2e_layout.py`（擺位幾何與公道杯對準杯口）。
+
+## 2026-10-18 茶席重排（第五輪，Oliver 按實物茶席圖指示）
+
+- 擺位規則：茶盤居中且加大（約佔舞台寬 65%，`HOME.trayRect`）；蓋碗與公道杯分列茶盤中線兩側；**品茗杯排在茶盤外、盤與客人之間的桌面**；水洗在右上；茶巾在右前；茶筒在右；壺爐、茶罐、茶荷（附茶撥）、茶夾在左前；左前一瓶插花（梅枝）。人物場景 13 張全部按此重生（Codex，以 `_work/gen5/master2.png` 為參考，腳本 `_work/gen5/run.py`、`scenes.py`）。
+- 新單品圖：水洗 `wash`、茶夾 `tongs`、茶撥 `pick`、插花瓶 `vase`（寫實／繪本，`_work/gen5/sheet5_*.png` → `cut5.py`；錨點在 `kit.js`，`kit.js` 的 `WS` 可按風格覆寫寬度）。背景換成大茶盤（`bg2_R/I`，繪本版以仿射變換對齊寫實版茶盤）。
+- 動畫：溫杯用茶夾夾起品茗杯（`tg`／`tgi`）、倒入水洗（`sC`、`aimCupToWash`）；潤茶湯倒入水洗（`sGTarget:"wash"`）；玻璃杯溫杯水倒入水洗（`aimGlassToWash`）；投茶時茶撥抬起撥茶（`hp`／`hpw`）。預設鏡頭改為全景（z=1），水溫標示移到右下。
+- 內容：備具、溫杯、投茶、潤茶文字更新；茶具卡新增茶撥、茶夾、水洗、茶席插花；技巧新增「茶夾溫杯」。
+- 測試：`_work/tools/e2e_layout.py` 重寫（杯在盤外、對稱、水洗接水對準、茶夾、茶撥等 22 項 × 兩風格）。舊場景圖備份 `_work/scene_old/`、舊背景 `_work/gen5/old_bg_*.webp`。

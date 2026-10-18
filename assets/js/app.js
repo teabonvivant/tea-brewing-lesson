@@ -75,14 +75,14 @@
     greet: "茶藝師端坐茶席前，雙手輕放桌邊，準備開始",
     kettle: "茶藝師提起銅壺，向蓋碗注入熱水",
     present: "茶藝師雙手捧着茶荷，請客人欣賞乾茶",
-    scoop: "茶藝師以茶匙把茶荷中的茶葉撥入蓋碗",
+    scoop: "茶藝師以茶撥把茶荷中的茶葉撥入蓋碗",
     pourHigh: "茶藝師高提銅壺，水柱懸空注入蓋碗",
     decant: "茶藝師以三指法持蓋碗，把茶湯倒入公道杯",
     share: "茶藝師持公道杯，低斟茶湯入品茗杯",
     offer: "茶藝師微微欠身，雙手奉上一杯茶",
     sip: "茶藝師雙手持杯，閉目聞香品茗",
     "kettle-g": "茶藝師提起銅壺，沿杯壁向玻璃杯低注熱水，杯中綠茶舒展",
-    "scoop-g": "茶藝師以茶匙把茶荷中的綠茶撥入已注水三分一的玻璃杯",
+    "scoop-g": "茶藝師以茶撥把茶荷中的綠茶撥入已注水三分一的玻璃杯",
     "offer-g": "茶藝師微微欠身，雙手捧上一杯玻璃杯綠茶",
     "sip-g": "茶藝師雙手持玻璃杯，閉目聞香"
   };
@@ -413,7 +413,7 @@
   }
 
   /* ---------- 茶具 ---------- */
-  const TOOL_IMG = { gaiwan: "tools/gaiwan", pitcher: "kit/{s}/pitcher", cup: "kit/{s}/cup", chahe: "kit/{s}/chahe", chaze: "kit/{s}/scoop", kettle: "kit/{s}/kettle", glass: "kit/{s}/tumbler", towel: "kit/{s}/towel" };
+  const TOOL_IMG = { gaiwan: "tools/gaiwan", pitcher: "kit/{s}/pitcher", cup: "kit/{s}/cup", chahe: "kit/{s}/chahe", chaze: "kit/{s}/scoop", chabo: "kit/{s}/pick", tongs: "kit/{s}/tongs", wash: "kit/{s}/wash", vase: "kit/{s}/vase", kettle: "kit/{s}/kettle", glass: "kit/{s}/tumbler", towel: "kit/{s}/towel" };
   function renderTools() {
     const st = TeaStage.getStyle();
     $("toolGrid").innerHTML = D.tools
