@@ -3,15 +3,18 @@
   const NS = "http://www.w3.org/2000/svg";
   /* 器具擺位（舞台座標 800×500，原點為各器具底部中心）；L 為按單品圖錨點計算出的相對位置，見 applyKit()。 */
   const HOME = {
-    kettle: { x: 104, y: 402 },
-    caddy: { x: 196, y: 452 },
-    gaiwan: { x: 404, y: 356 },
-    glass: { x: 450, y: 356 },
-    towel: { x: 668, y: 362 },
-    pitcher: { x: 530, y: 352 },
-    cups: [{ x: 652, y: 350 }, { x: 680, y: 374 }, { x: 708, y: 350 }],
-    chahe: { x: 296, y: 360 }
+    kettle: { x: 108, y: 352 },
+    caddy: { x: 58, y: 404 },
+    gaiwan: { x: 400, y: 342 },
+    glass: { x: 400, y: 350 },
+    towel: { x: 640, y: 384 },
+    pitcher: { x: 535, y: 336 },
+    cups: [{ x: 328, y: 364 }, { x: 400, y: 364 }, { x: 472, y: 364 }],
+    chahe: { x: 190, y: 380 },
+    holder: { x: 702, y: 330 },
+    tray: { x: 528, y: 362 }
   };
+
   const L = {
     kettleTip: { x: 93, y: -80 }, kettlePivot: { x: 0, y: -52 },
     gaiwanLip: { x: 58, y: -68 }, gaiwanRim: -68,
@@ -105,7 +108,7 @@
   }
   function aimPitcher(target, r, h) {
     const tip = rot(L.pitcherTip, L.pitcherTip, r);
-    return { x: target.x - 6 - (HOME.pitcher.x + tip.x), y: target.y - h - (HOME.pitcher.y + tip.y) };
+    return { x: target.x + 6 - (HOME.pitcher.x + tip.x), y: target.y - h - (HOME.pitcher.y + tip.y) };
   }
   const gaiwanTop = () => ({ x: HOME.gaiwan.x + L.gaiwanRimX, y: HOME.gaiwan.y + L.gaiwanRim });
   const glassTop = () => ({ x: HOME.glass.x + L.glassRimX, y: HOME.glass.y + L.glassTop });
@@ -143,14 +146,14 @@
   function pitcherPour(c, t0, i, dur, from, to, cupFrom, cupTo) {
     const r = [48, 56, 64, 72].find((rr) => pitchClear(i, rr) <= 20) || 72, a = aimPitcher(cupTop(i), r, pitchClear(i, r));
     c.key("px", t0, c.lastPx || 0).key("py", t0, c.lastPy || 0).key("pr", t0, c.lastPr || 0)
-      .key("px", t0 + 0.6, a.x).key("py", t0 + 0.6, a.y).key("pr", t0 + 0.6, 22)
-      .key("pr", t0 + 0.9, r).key("pr", t0 + 0.9 + dur, r + 6).key("pr", t0 + 1.2 + dur, 22)
+      .key("px", t0 + 0.6, a.x).key("py", t0 + 0.6, a.y).key("pr", t0 + 0.6, -22)
+      .key("pr", t0 + 0.9, -r).key("pr", t0 + 0.9 + dur, -(r + 6)).key("pr", t0 + 1.2 + dur, -22)
       .key("px", t0 + 0.9 + dur, a.x).key("py", t0 + 0.9 + dur, a.y).key("py", t0 + 1.2 + dur, a.y - 34)
       .key("pTarget", t0, String(i))
       .hold("sP", t0, t0 + 0.85, 0).key("sP", t0 + 1.0, 1).key("sP", t0 + 0.85 + dur, 1).key("sP", t0 + 1.0 + dur, 0)
       .key("pLevel", t0 + 0.9, from).key("pLevel", t0 + 0.9 + dur, to)
       .key("c" + i, t0 + 0.95, cupFrom).key("c" + i, t0 + 0.95 + dur, cupTo);
-    c.lastPx = a.x; c.lastPy = a.y - 34; c.lastPr = 22;
+    c.lastPx = a.x; c.lastPy = a.y - 34; c.lastPr = -22;
     return t0 + 1.2 + dur;
   }
   /* 低斟：由低至高找出公道杯杯身不碰同一排品茗杯的最低高度（嘴離杯口約 1–2 cm 起）；前後排只是遮擋，不算相碰 */
@@ -160,7 +163,7 @@
     for (let h = 10; h < 90; h += 2) {
       const a = aimPitcher(cupTop(i), r, h);
       const hit = L.pPoly.some((p) => {
-        const q = rot(p, L.pitcherTip, r), x = HOME.pitcher.x + a.x + q.x, y = HOME.pitcher.y + a.y + q.y;
+        const q = rot(p, L.pitcherTip, -r), x = HOME.pitcher.x + a.x + q.x, y = HOME.pitcher.y + a.y + q.y;
         return HOME.cups.some((cp) => Math.abs(cp.y - HOME.cups[i].y) < 6 && Math.abs(x - cp.x) < rx + 3 && y > cp.y + L.cupRim - 3);
       });
       if (!hit) return h;
@@ -188,12 +191,12 @@
     const b = baseState(tea, mode);
     const temp = tea.temp[0] === tea.temp[1] ? `${tea.temp[0]}°C` : `${tea.temp[0]}–${tea.temp[1]}°C`;
     const preset = {
-      prepare: {}, warm: {}, view: {}, add: { hLeaves: 1 },
+      prepare: { lid: 1 }, warm: {}, view: { lid: 1 }, add: { hLeaves: 1 },
       rinse: { gLeaves: 1 }, brew: glass ? { wLeaves: 1, wLevel: 0.3, wTint: 0.25 } : { gLeaves: 1 },
       pour: { gLeaves: 1, gLevel: 1, gTint: 1, lid: 1 },
-      share: { gLeaves: 1, pLevel: 0.82 },
-      serve: glass ? { wLeaves: 1, wLevel: 0.72, wTint: 1, dance: 1, temp: 0 } : { gLeaves: 1, pLevel: 0.12, c0: 0.7, c1: 0.7, c2: 0.7, temp: 0 },
-      taste: glass ? { wLeaves: 1, wLevel: 0.72, wTint: 1, wx: -10, wy: 52, ws: 1.2, dance: 1, temp: 0 } : { gLeaves: 1, pLevel: 0.12, c0: 0.7, c1: 0.7, c2: 0.7, c1x: -40, c1y: 80, c1s: 1.12, temp: 0 },
+      share: { gLeaves: 1, pLevel: 0.82, lid: 1 },
+      serve: glass ? { wLeaves: 1, wLevel: 0.72, wTint: 1, dance: 1, temp: 0 } : { gLeaves: 1, pLevel: 0.12, c0: 0.7, c1: 0.7, c2: 0.7, temp: 0, lid: 1 },
+      taste: glass ? { wLeaves: 1, wLevel: 0.72, wTint: 1, wx: -10, wy: 52, ws: 1.2, dance: 1, temp: 0 } : { gLeaves: 1, pLevel: 0.12, c0: 0.7, c1: 0.7, c2: 0.7, c1x: 30, c1y: 80, c1s: 1.12, temp: 0, lid: 1 },
       again: glass ? { wLeaves: 1, wLevel: 0.3, wTint: 0.9, dance: 1 } : { gLeaves: 1, lid: 0 }
     };
     Object.assign(b, preset[id] || {});
@@ -219,7 +222,7 @@
             .key("wLevel", t + 0.8, 0.3).key("wLevel", t + 1.7, 0).hold("sW", t, t + 0.75, 0).key("sW", t + 0.9, 1).key("sW", t + 1.6, 1).key("sW", t + 1.8, 0)
             .key("wr", t + 1.9, 112).key("wr", t + 2.5, 0).key("wy", t + 2.6, 0).key("wx", t + 2.6, 0);
         } else {
-          c.label(0, "沸水注入蓋碗").key("lid", 0, 0);
+          c.label(0, "沸水注入蓋碗").key("lid", 0, 1).key("lid", 0.5, 0);
           let t = kettlePour(c, 0.1, gTarget(0.4), { r: 36, h: 30, dur: 1.4 });
           c.key("gLevel", 1.0, 0).key("gLevel", 2.3, 0.55).key("gTint", 0, 0);
           c.label(t - 0.6, "再倒入公道杯").key("pTint", 0, 0).key("lid", t - 1.2, 0).key("lid", t - 0.6, 1);
@@ -254,6 +257,7 @@
           c.key("wLevel", 0.9, 0).key("wLevel", 2.2, 0.3);
         }
         const t0 = glass ? 3.2 : 0.2;
+        if (!glass) c.key("lid", 0, 1).key("lid", 0.5, 0);
         const hx = tgt.x - 12 - (HOME.chahe.x + L.chaheTip.x), hy = tgt.y - 5 - (HOME.chahe.y + L.chaheTip.y);
         c.label(t0, glass ? "茶荷移至杯口上方，將茶葉送入杯中" : "茶荷移至碗口上方，將茶葉輕輕送入碗中");
         c.key("hx", t0, 0).key("hy", t0, 0).key("hr", t0, 0).key("hx", t0 + 0.9, hx).key("hy", t0 + 0.9, hy).key("hr", t0 + 0.9, 0)
@@ -273,12 +277,13 @@
       case "rinse": {
         const secs = tea.rinse ? tea.rinse.secs : 5;
         c.label(0, "沿碗邊注水，浸過茶葉即可");
+        if (!glass) c.key("lid", 0, 1).key("lid", 0.5, 0);
         let t = kettlePour(c, 0.1, { x: gaiwanTop().x - 30, y: gaiwanTop().y + 6 }, { r: 34, h: 26, dur: 1.2 });
         c.key("gLevel", 1.0, 0).key("gLevel", 2.1, 0.5).key("gTint", 1.0, 0).key("gTint", 3.4, 0.35);
         c.key("lid", 2.3, 0).key("lid", 2.9, 1);
         c.label(t - 0.6, `約 ${secs} 秒`).key("timer", t - 0.6, 0).key("timer", t + 0.9, 1).key("timerText", t - 0.6, `${secs}秒`).key("timer", t + 1.0, 0);
         c.label(t + 1.0, "倒出潤茶湯（可用來淋壺燙杯）");
-        gaiwanPour(c, t + 1.0, { x: HOME.pitcher.x - 70, y: HOME.pitcher.y - 6 }, 0.9, 0.5);
+        gaiwanPour(c, t + 1.0, { x: HOME.tray.x, y: HOME.tray.y - 6 }, 0.9, 0.5);
         c.key("sGTarget", t + 1.0, "tray");
         break;
       }
@@ -291,6 +296,7 @@
           c.label(5.0, "茶葉上下翻動，靜待舒展");
         } else {
           c.label(0, `沿碗壁懸壺高沖・${temp}`);
+          c.key("lid", 0, 1).key("lid", 0.5, 0);
           let t = kettlePour(c, 0.1, gWall(), { r: 40, h0: 20, h: 86, dur: 1.9 });
           c.key("gLevel", 1.0, 0).key("gLevel", 2.8, 1).key("gTint", 1.0, 0).key("gTint", 5.6, 1);
           c.label(t - 0.4, "用碗蓋輕刮浮沫").key("lid", t - 0.4, 0).key("lid", t + 0.2, 1)
@@ -322,7 +328,7 @@
           c.label(2.2, "請用茶").key("steamCup", 0, 0).key("steamCup", 2, 1);
         } else {
           c.label(0, "雙手托杯，奉到客人面前");
-          c.key("c1x", 0.3, 0).key("c1y", 0.3, 0).key("c1s", 0.3, 1).key("c1y", 0.9, -14).key("c1x", 2.2, -40).key("c1y", 2.2, 80).key("c1s", 2.2, 1.12);
+          c.key("c1x", 0.3, 0).key("c1y", 0.3, 0).key("c1s", 0.3, 1).key("c1y", 0.9, -14).key("c1x", 2.2, 30).key("c1y", 2.2, 80).key("c1s", 2.2, 1.12);
           c.label(2.4, "輕放在客人右前方：「請用茶」").key("steamCup", 0, 0).key("steamCup", 2.2, 1);
           c.label(4.0, "客人以「叩指禮」回禮");
         }
@@ -348,6 +354,7 @@
           c.label(4.2, `可續 ${tea.infusions}`);
         } else {
           c.label(0, "第二泡：按茶湯濃淡酌量加時");
+          c.key("lid", 0, 1).key("lid", 0.5, 0);
           let t = kettlePour(c, 0.1, gWall(), { r: 40, h0: 20, h: 70, dur: 1.6 });
           c.key("gLevel", 1.0, 0).key("gLevel", 2.5, 1).key("gTint", 1.0, 0).key("gTint", 4.4, 1).key("lid", t - 0.3, 0).key("lid", t + 0.2, 1);
           c.label(t + 0.3, `本示範第二泡約 ${tea.steeps.first + tea.steeps.add} 秒・可續泡數次`).key("timer", t + 0.3, 0).key("timer", t + 2.0, 1)
@@ -391,7 +398,7 @@
       }
       case "points": {
         c.label(0, "最後幾滴濃湯，逐杯點入");
-        Object.assign(b, { gLevel: 0.05, gTint: 1, gLeaves: 1, lid: 1, lidGap: 1, pLevel: 0, c0: 0.66, c1: 0.66, c2: 0.66 });
+        Object.assign(b, { gLevel: 0.05, gTint: 1, gLeaves: 1, lid: 1, lidGap: 1, pLevel: 0, sGTarget: "cup", c0: 0.66, c1: 0.66, c2: 0.66 });
         let t = 0.1;
         [0, 1, 2].forEach((i) => {
           const a = aimGaiwan(cupTop(i), 9);
@@ -413,7 +420,7 @@
   /* ---------- 單品圖版面 ---------- */
   const KIT = window.TEA_KIT;
   const IMG = "assets/img/kit/";
-  const PARTS = ["bowl", "saucer", "lid", "cup", "caddy", "kettle", "stove", "chahe", "towel", "pitcher", "tumbler"];
+  const PARTS = ["bowl", "saucer", "lid", "cup", "caddy", "kettle", "stove", "chahe", "towel", "pitcher", "tumbler", "holder"];
   const WET = ["wet-00", "wet-01", "wet-02", "wet-03", "wet-04", "wet-05", "wet-06", "wet-07", "wet-08", "wet-09", "wet-10", "wet-11"];
   const TEA_IDS = ["green", "white", "yellow", "oolong", "black", "shengpu", "shoupu", "jasmine"];
 
@@ -544,6 +551,8 @@
     img(R.stoveFront, "stove").setAttribute("clip-path", "url(#tb-stf)");
 
     // 茶巾、茶罐
+    R.holder = el("g", { transform: `translate(${HOME.holder.x},${HOME.holder.y})` }, R.layer);
+    shadow(R.holder, 20, 5); img(R.holder, "holder");
     R.towel = el("g", { transform: `translate(${HOME.towel.x},${HOME.towel.y})` }, R.layer);
     shadow(R.towel, 46, 9); img(R.towel, "towel");
     R.caddy = el("g", { transform: `translate(${HOME.caddy.x},${HOME.caddy.y})` }, R.layer);
@@ -764,8 +773,8 @@
     R.pitcher.style.display = glass ? "none" : "";
     R.cups.forEach((c) => (c.g.style.display = glass ? "none" : ""));
     R.glass.style.display = glass ? "" : "none";
-    R.towel.style.display = glass ? "" : "none";
     appear(R.towel, 4);
+    appear(R.holder, 4);
     appear(R.caddy, 1);
     const gOff = appear(R.gaiwan, 2);
     const lip = L.gaiwanLip, br = q.bowlRim;
@@ -806,7 +815,7 @@
     R.pLiquid.setAttribute("fill", mixColor(WATER, teaCol, s.pTint));
     const pOn = s.pLevel > 0.01;
     R.pLiquid.style.opacity = pOn ? 0.9 : 0; R.pLiquidDepth.style.opacity = pOn ? 1 : 0; R.pSurface.style.opacity = pOn ? 1 : 0;
-    if (!glass && pOn && s.pLevel > 0.12 && s.pr < 12) emit.push({ k: "pst", type: "steam", x: HOME.pitcher.x + s.px + q.pRim.cx, y: HOME.pitcher.y + s.py + q.pRim.cy - 2, rate: 2.2, spread: 36, lift: 0.8, alpha: 0.3 });
+    if (!glass && pOn && s.pLevel > 0.12 && s.pr > -12) emit.push({ k: "pst", type: "steam", x: HOME.pitcher.x + s.px + q.pRim.cx, y: HOME.pitcher.y + s.py + q.pRim.cy - 2, rate: 2.2, spread: 36, lift: 0.8, alpha: 0.3 });
 
     // 品茗杯
     const cr = q.cRim;
@@ -830,7 +839,7 @@
     const rowNext = (ti) => R.cups.map((c, j) => [HOME.cups[j].y, c.g]).filter(([y]) => y >= HOME.cups[ti].y - 5).sort((a, b) => a[0] - b[0])[0][1];
     const ti = Math.round(s.pTarget || 0);
     [[R.pitcher, R.pitcherNext, s.px !== 0 || s.py !== 0], [R.gaiwan, R.gaiwanNext, s.sGTarget === "cup" && (s.gx !== 0 || s.gy !== 0)]].forEach(([node, home, away]) => {
-      const want = away ? rowNext(ti) : home;
+      const want = away ? (node === R.gaiwan ? R.chahe : rowNext(ti)) : home;
       if (node.nextSibling !== want) R.layer.insertBefore(node, want);
     });
 
@@ -895,7 +904,7 @@
     const lipW = { x: HOME.gaiwan.x + s.gx + lip.x, y: HOME.gaiwan.y + s.gy + lip.y };
     const ci = Math.round(s.pTarget || 0);
     const cupSurf = HOME.cups[ci].y + cr.cy + (1 - s["c" + ci]) * cr.ry * 1.05;
-    const gTo = s.sGTarget === "tray" ? { x: lipW.x + 6, y: HOME.pitcher.y - 2 }
+    const gTo = s.sGTarget === "tray" ? { x: lipW.x + 6, y: HOME.tray.y }
       : s.sGTarget === "cup" ? { x: lipW.x + 4, y: cupSurf }
       : { x: lipW.x + 6, y: HOME.pitcher.y + L.pFloor - s.pLevel * L.pH };
     let wTo = null;
@@ -908,7 +917,7 @@
       ribbon(R.sG, s.sW, wa, wTo, { x: 0.5, y: 0.6 }, 4.2, tint(s.wTint), now, 0.55);
     } else ribbon(R.sG, s.sG, lipW, gTo, { x: 0.5, y: 0.6 }, 5, tint(s.gTint), now, 0.55);
     const pTipW = { x: HOME.pitcher.x + s.px + pt.x, y: HOME.pitcher.y + s.py + pt.y };
-    const cupTo = { x: pTipW.x + 4, y: cupSurf };
+    const cupTo = { x: pTipW.x - 4, y: cupSurf };
     ribbon(R.sP, s.sP, pTipW, cupTo, { x: 0.5, y: 0.6 }, 3.8, mixColor(WATER, deep, s.pTint), now, 0.55);
     const lands = [[s.sK, kTarget, 22], glass ? [s.sW, wTo, 16] : [s.sG, gTo, 20], [s.sP, cupTo, 12]];
     lands.forEach(([on, p, w], i) => {
@@ -961,7 +970,7 @@
     const mid = (a, b, k = 0.5) => ({ x: lerp(a.x, b.x, k), y: lerp(a.y, b.y, k) });
     if (s.sK > 0.05 || s.kr > 8) { const m = mid(P.tip, P.kTarget, 0.35); f = { x: m.x - 18, y: m.y - 24, z: 1.62 }; }
     else if (s.sG > 0.05 || s.gr > 10) { const m = mid(P.lipW, P.gTo, 0.5); f = { x: m.x, y: m.y - 8, z: 1.72 }; }
-    else if (s.sP > 0.05 || s.pr > 10) { const m = mid(P.pTipW, P.cupTo, 0.5); f = { x: m.x - 10, y: m.y - 6, z: 1.8 }; }
+    else if (s.sP > 0.05 || s.pr < -10) { const m = mid(P.pTipW, P.cupTo, 0.5); f = { x: m.x - 10, y: m.y - 6, z: 1.8 }; }
     else if (s.lid > 0.02 && s.lid < 0.98 || s.lidX !== 0) f = { x: HOME.gaiwan.x + R.q.bowlRim.cx, y: HOME.gaiwan.y + R.q.bowlRim.cy - 6, z: 1.9 };
     else if (s.hs > 1.3) f = { x: HOME.chahe.x + s.hx, y: HOME.chahe.y + s.hy - 20, z: 1.5 };
     else if (s.fall > 0 && s.fall < 1 || (s.hr > 6 && s.hx > 10)) { const m = mid(P.from, P.to, 0.5); f = { x: m.x, y: m.y - 4, z: 1.8 }; }
