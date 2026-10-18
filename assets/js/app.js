@@ -81,12 +81,14 @@
     share: "茶藝師持公道杯，低斟茶湯入品茗杯",
     offer: "茶藝師微微欠身，雙手奉上一杯茶",
     sip: "茶藝師雙手持杯，閉目聞香品茗",
+    smell: "茶藝師雙手持蓋碗湊近鼻端，閉目聞乾茶香",
+    "smell-g": "茶藝師雙手持玻璃杯湊近鼻端，閉目聞茶香",
     "kettle-g": "茶藝師提起銅壺，沿杯壁向玻璃杯低注熱水，杯中綠茶舒展",
     "scoop-g": "茶藝師以茶撥把茶荷中的綠茶撥入已注水三分一的玻璃杯",
     "offer-g": "茶藝師微微欠身，雙手捧上一杯玻璃杯綠茶",
     "sip-g": "茶藝師雙手持玻璃杯，閉目聞香"
   };
-  const GLASS_POSE = { kettle: "kettle-g", pourHigh: "kettle-g", scoop: "scoop-g", offer: "offer-g", sip: "sip-g" };
+  const GLASS_POSE = { kettle: "kettle-g", pourHigh: "kettle-g", scoop: "scoop-g", offer: "offer-g", sip: "sip-g", smell: "smell-g" };
   /* 手勢定格：特寫畫面角落顯示真實手勢 */
   const HANDS = {
     grip: { id: "grip", cap: "三指法：拇指、中指扣碗沿，食指按蓋鈕", alt: "右手以三指法持蓋碗，食指按蓋鈕，向公道杯出湯" },

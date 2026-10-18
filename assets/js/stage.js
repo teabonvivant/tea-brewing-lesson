@@ -209,9 +209,9 @@
     const b = baseState(tea, mode);
     const temp = tea.temp[0] === tea.temp[1] ? `${tea.temp[0]}°C` : `${tea.temp[0]}–${tea.temp[1]}°C`;
     const preset = {
-      prepare: { lid: 1 }, warm: {}, view: { lid: 1 }, add: { hLeaves: 1 },
+      prepare: { lid: 1 }, warm: {}, view: { lid: 1 }, add: { hLeaves: 1 }, smell: glass ? { wLeaves: 1, wLevel: 0.3, wTint: 0.25 } : { gLeaves: 1, lid: 1 },
       rinse: { gLeaves: 1 }, brew: glass ? { wLeaves: 1, wLevel: 0.3, wTint: 0.25 } : { gLeaves: 1 },
-      pour: { gLeaves: 1, gLevel: 1, gTint: 1, lid: 1 },
+      pour: { gLeaves: 1, gLevel: 0.8, gTint: 1, lid: 1 },
       share: { gLeaves: 1, pLevel: 0.82, lid: 1 },
       serve: glass ? { wLeaves: 1, wLevel: 0.72, wTint: 1, dance: 1, temp: 0 } : { gLeaves: 1, pLevel: 0.12, c0: 0.7, c1: 0.7, c2: 0.7, temp: 0, lid: 1 },
       taste: glass ? { wLeaves: 1, wLevel: 0.72, wTint: 1, wx: -10, wy: 52, ws: 1.2, dance: 1, temp: 0 } : { gLeaves: 1, pLevel: 0.12, c0: 0.7, c1: 0.7, c2: 0.7, c1x: 30, c1y: 80, c1s: 1.12, temp: 0, lid: 1 },
@@ -302,9 +302,7 @@
           c.label(t0 + 4.0, "輕搖杯身，令茶葉吸水舒展").key("wTint", t0 + 3.0, 0).key("wTint", t0 + 5.4, 0.25)
             .key("wr", t0 + 4.1, 0).key("wr", t0 + 4.5, -7).key("wr", t0 + 4.9, 7).key("wr", t0 + 5.3, 0);
         } else {
-          c.label(t0 + 4.0, "蓋上碗蓋輕搖，聞乾茶香").key("lid", t0 + 3.8, 0).key("lid", t0 + 4.4, 1)
-            .key("gr", t0 + 4.4, 0).key("gr", t0 + 4.7, -6).key("gr", t0 + 5.0, 6).key("gr", t0 + 5.3, -6).key("gr", t0 + 5.6, 0)
-            .key("gy", t0 + 4.4, 0).key("gy", t0 + 4.7, -10).key("gy", t0 + 5.6, -10).key("gy", t0 + 6.0, 0);
+          c.label(t0 + 4.0, "蓋上碗蓋").key("lid", t0 + 3.8, 0).key("lid", t0 + 4.4, 1);
         }
         break;
       }
@@ -332,7 +330,7 @@
           c.label(0, `沿碗壁懸壺高沖・${temp}`);
           c.key("lid", 0, 1).key("lid", 0.5, 0);
           let t = kettlePour(c, 0.1, gWall(), { r: 40, h0: 20, h: 86, dur: 1.9 });
-          c.key("gLevel", 1.0, 0).key("gLevel", 2.8, 1).key("gTint", 1.0, 0).key("gTint", 5.6, 1);
+          c.key("gLevel", 1.0, 0).key("gLevel", 2.8, 0.8).key("gTint", 1.0, 0).key("gTint", 5.6, 1);
           c.label(t - 0.4, "用碗蓋輕刮浮沫").key("lid", t - 0.4, 0).key("lid", t + 0.2, 1)
             .key("lidX", t + 0.2, 0).key("lidR", t + 0.2, 0).key("lidX", t + 0.5, -12).key("lidR", t + 0.5, -10)
             .key("lidX", t + 1.1, 14).key("lidR", t + 1.1, -10).key("lidX", t + 1.5, 0).key("lidR", t + 1.5, 0);
@@ -341,7 +339,7 @@
         break;
       case "pour":
         c.label(0, "三指法：拇指中指扣碗沿，食指按蓋鈕");
-        gaiwanPour(c, 0.4, pitcherTop(), 1.8, 1);
+        gaiwanPour(c, 0.4, pitcherTop(), 1.8, 0.8);
         c.key("pTint", 0, 1).key("pLevel", 1.5, 0).key("pLevel", 3.3, 0.82);
         c.label(1.6, "留一道縫出湯，茶葉留在碗內").label(3.4, "最後幾滴也要瀝乾");
         c.key("drop", 3.4, 0).key("drop", 3.9, 0.999).key("dropTarget", 0, "pitcher");
@@ -367,6 +365,19 @@
           c.label(4.0, "客人以「叩指禮」回禮");
         }
         break;
+      case "smell":
+        if (glass) {
+          c.label(0, "雙手捧杯，輕搖令茶葉吸水").key("wr", 0.3, 0).key("wr", 0.7, -7).key("wr", 1.1, 7).key("wr", 1.5, 0);
+          c.label(2.0, "杯口移近鼻端，深吸一口熱香").key("wx", 1.8, 0).key("wy", 1.8, 0).key("ws", 1.8, 1).key("wx", 2.8, -10).key("wy", 2.8, -22).key("ws", 2.8, 1.12).key("wx", 5.2, -10).key("wy", 5.2, -22).key("ws", 5.2, 1.12).key("wx", 6.0, 0).key("wy", 6.0, 0).key("ws", 6.0, 1);
+          c.key("steamCup", 2.8, 1);
+          c.label(5.4, "聞茶葉受熱後散發的香氣");
+        } else {
+          c.label(0, "蓋上碗蓋，輕搖數下").key("lid", 0, 1).key("gr", 0.4, 0).key("gr", 0.8, -6).key("gr", 1.2, 6).key("gr", 1.6, -6).key("gr", 2.0, 0);
+          c.label(2.2, "碗蓋稍移開一道縫，聞蓋上乾香").key("lidGap", 2.2, 0).key("lidGap", 2.8, 1).key("lidGap", 5.2, 1).key("lidGap", 5.8, 0);
+          c.key("gy", 2.2, 0).key("gy", 2.9, -14).key("gy", 5.2, -14).key("gy", 5.9, 0);
+          c.label(5.4, "乾香、熱香，各有不同");
+        }
+        break;
       case "taste": {
         const lv = glass ? "wLevel" : "c1";
         const v0 = 0.72;
@@ -390,7 +401,7 @@
           c.label(0, "第二泡：按茶湯濃淡酌量加時");
           c.key("lid", 0, 1).key("lid", 0.5, 0);
           let t = kettlePour(c, 0.1, gWall(), { r: 40, h0: 20, h: 70, dur: 1.6 });
-          c.key("gLevel", 1.0, 0).key("gLevel", 2.5, 1).key("gTint", 1.0, 0).key("gTint", 4.4, 1).key("lid", t - 0.3, 0).key("lid", t + 0.2, 1);
+          c.key("gLevel", 1.0, 0).key("gLevel", 2.5, 0.8).key("gTint", 1.0, 0).key("gTint", 4.4, 1).key("lid", t - 0.3, 0).key("lid", t + 0.2, 1);
           c.label(t + 0.3, `本示範第二泡約 ${tea.steeps.first + tea.steeps.add} 秒・可續泡數次`).key("timer", t + 0.3, 0).key("timer", t + 2.0, 1)
             .key("timerText", t + 0.3, `${tea.steeps.first + tea.steeps.add}秒`).key("timer", t + 2.1, 0);
         }
@@ -864,12 +875,12 @@
       e.setAttribute("transform", `translate(${x},${y}) rotate(${r + Math.sin(now / 1400 + i) * 3 * wetK})`);
     });
     const lv = s.gLevel;
-    const gl = { cx: br.cx, cy: br.cy + (1 - lv) * br.ry * 0.9, rx: br.rx * 0.93 * (0.7 + 0.3 * lv), ry: br.ry * 0.82 * (0.7 + 0.3 * lv) };
+    const gl = { cx: br.cx, cy: br.cy + (1 - lv) * br.ry * 1.9, rx: br.rx * 0.93 * (0.6 + 0.4 * lv), ry: br.ry * 0.82 * (0.6 + 0.4 * lv) };
     [R.gLiquid, R.gLiquidDepth, R.gLiquidHi].forEach((e) => { e.setAttribute("cy", gl.cy); e.setAttribute("rx", gl.rx); e.setAttribute("ry", gl.ry); e.style.opacity = lv > 0.02 ? 1 : 0; });
     R.gLiquid.style.opacity = lv > 0.02 ? 0.88 : 0;
     R.gLiquid.setAttribute("fill", tint(s.gTint));
     const lk = s.lid;
-    const lidOn = { x: br.cx + s.lidX - 4 * s.lidGap * gdir, y: br.cy + 1 - 0.6 * s.lidGap, r: s.lidR - 5 * s.lidGap * gdir }, lidOff = { x: br.cx + br.rx + 18, y: -10, r: -58 };
+    const lidOn = { x: br.cx + s.lidX - 4 * s.lidGap * gdir, y: br.cy + 1 - 0.6 * s.lidGap, r: s.lidR - 5 * s.lidGap * gdir }, lidOff = { x: br.cx - br.rx - 14, y: br.cy + 38, r: -8 };
     R.lid.setAttribute("transform", `translate(${lerp(lidOff.x, lidOn.x, lk)},${lerp(lidOff.y, lidOn.y, lk)}) rotate(${lerp(lidOff.r, lidOn.r, lk)})`);
     R.gFront.style.display = lk > 0.6 ? "" : "none";
     const closed = !glass && lk > 0.995 && s.lidGap < 0.02 && s.lidX === 0 && s.lidR === 0 && s.gr === 0 && s.gx === 0 && s.gy === 0;

@@ -38,7 +38,7 @@
     for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
     noise = buf;
     // 水聲：真實倒水錄音循環播放，音量、音高與亮度隨水流和水位變化
-    pourBand = ctx.createBiquadFilter(); pourBand.type = "lowpass"; pourBand.frequency.value = 3200; pourBand.Q.value = 0.3;
+    pourBand = ctx.createBiquadFilter(); pourBand.type = "lowpass"; pourBand.frequency.value = 1800; pourBand.Q.value = 0.3;
     pourGain = ctx.createGain(); pourGain.gain.value = 0;
     pourBand.connect(pourGain); pourGain.connect(sfxBus);
     fetch("assets/audio/water-pour.mp3").then((r) => r.arrayBuffer()).then((ab) => ctx.decodeAudioData(ab)).then((buf) => {
@@ -111,9 +111,9 @@
     let v = 0, fill = 0, thin = 1;
     for (const k in pourWant) { const w = pourWant[k]; if (w && w.v > v) { v = w.v; fill = w.fill; thin = w.thin; } }
     const on = prefs.sfx && v > 0;
-    pourGain.gain.setTargetAtTime(on ? 0.5 * v * thin : 0, t, 0.12);
-    pourBand.frequency.setTargetAtTime(2400 + 3200 * fill, t, 0.15);
-    if (pourSrc) pourSrc.playbackRate.setTargetAtTime((0.92 + 0.22 * fill) * (thin < 1 ? 1.06 : 1), t, 0.2);
+    pourGain.gain.setTargetAtTime(on ? 0.2 * v * thin : 0, t, 0.3);
+    pourBand.frequency.setTargetAtTime(1500 + 1500 * fill, t, 0.3);
+    if (pourSrc) pourSrc.playbackRate.setTargetAtTime((0.82 + 0.12 * fill) * (thin < 1 ? 1.04 : 1), t, 0.4);
   }
   setInterval(frameUpdate, 60);
 
