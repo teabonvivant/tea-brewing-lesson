@@ -93,3 +93,10 @@ addEventListener("message", (e) => {
 - 茶湯色：8 款茶色改為更通透的琥珀／翠金／石榴紅；液面明暗漸層加入暖色。
 - 音效：全部重寫為柔和版——水聲改為大量細小水泡（音高上滑的正弦）疊成，水位愈高音高愈高；瓷／玻璃碰聲只留少量泛音、去掉噪音敲擊；移除木敲、沸騰嘶聲、隨機氣泡；總線加 4.8 kHz 低通＋廳堂殘響，總音量下調（約 −30 dBFS 級，低於背景音樂）。
 - 測試：`e2e_layout.py` 公道杯規則改為「近中線、比蓋碗更近人、蓋碗在其左 40–150px」。
+
+## 2026-10-18 並排擺位＋蓋碗重做＋真實水聲（第七輪）
+
+- 擺位：蓋碗與公道杯同一水平線並排，以茶盤中線左右均分（`HOME.gaiwan` 326,262／`HOME.pitcher` 452,262）；水洗移到茶盤右上角（640,250）；左前加茶則（`HOME.scoop`）。人物場景 13 張按此重生（`_work/gen5/run7.py`→`master4.png`、`scenes.py`、`install7.py`；舊稿 `_work/gen5/old7/`）。
+- 蓋碗重做：Codex 同一套設計生成「合蓋整件」＋碗／碟／蓋分件（`_work/gen7/gen.py`、`cut7.py`、`cutlid.py`；舊圖備份 `_work/kit/orig7/`）。合蓋靜止時改顯示整件圖 `gclosed.webp`（`R.gClosed`），開蓋、傾斜、蓋留縫時用分件（`closed` 判斷在 stage.js 蓋碗段）。
+- 音效：倒水改用真實錄音 `assets/audio/water-pour.mp3`（Wikimedia Commons 公共領域《Water flowing pouring trickling》，stephan；原檔及處理在 `_work/audio/water/`），循環播放，音量／音高／亮度隨水流和水位變化；取消所有叮噹聲（瓷、玻璃、銅、計時鈴、水滴），放置聲改為低頻悶響；音量更低、殘響更少。頁腳已署名。
+- 測試：`e2e_layout.py`（並排、均分、水洗右上、茶則）、`e2e_real.py`（合蓋整件圖／開蓋分件）全部通過。

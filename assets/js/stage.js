@@ -6,16 +6,17 @@
   const HOME = {
     kettle: { x: 62, y: 322 },
     caddy: { x: 92, y: 410 },
-    gaiwan: { x: 322, y: 276 },
-    glass: { x: 390, y: 270 },
+    gaiwan: { x: 326, y: 262 },
+    glass: { x: 390, y: 262 },
     towel: { x: 706, y: 424 },
-    pitcher: { x: 402, y: 250 },
+    pitcher: { x: 452, y: 262 },
     cups: [{ x: 318, y: 376 }, { x: 394, y: 376 }, { x: 470, y: 376 }],
     chahe: { x: 172, y: 442 },
     holder: { x: 768, y: 352 },
-    wash: { x: 714, y: 272 },
+    wash: { x: 640, y: 250 },
     vase: { x: 40, y: 468 },
     tongs: { x: 330, y: 424 },
+    scoop: { x: 250, y: 470 },
     tray: { x: 390, y: 262 },
     trayRect: { x0: 129, x1: 652, y0: 204, y1: 326 }
   };
@@ -448,7 +449,7 @@
   /* ---------- 單品圖版面 ---------- */
   const KIT = window.TEA_KIT;
   const IMG = "assets/img/kit/";
-  const PARTS = ["bowl", "saucer", "lid", "cup", "caddy", "kettle", "stove", "chahe", "towel", "pitcher", "tumbler", "holder", "wash", "tongs", "pick", "vase"];
+  const PARTS = ["bowl", "saucer", "lid", "cup", "caddy", "kettle", "stove", "chahe", "towel", "pitcher", "tumbler", "holder", "wash", "tongs", "pick", "vase", "scoop", "gclosed"];
   const WET = ["wet-00", "wet-01", "wet-02", "wet-03", "wet-04", "wet-05", "wet-06", "wet-07", "wet-08", "wet-09", "wet-10", "wet-11"];
   const TEA_IDS = ["green", "white", "yellow", "oolong", "black", "shengpu", "shoupu", "jasmine"];
 
@@ -596,10 +597,14 @@
     shadow(R.wash, 46, 9); img(R.wash, "wash");
     R.vase = el("g", { transform: `translate(${HOME.vase.x},${HOME.vase.y})` }, R.layer);
     shadow(R.vase, 20, 4); img(R.vase, "vase");
+    R.scoop = el("g", { transform: `translate(${HOME.scoop.x},${HOME.scoop.y}) rotate(-4)` }, R.layer);
+    shadow(R.scoop, 28, 3); img(R.scoop, "scoop");
 
     // 蓋碗
     R.saucer = el("g", {}, R.layer);
     shadow(R.saucer, 56, 11); img(R.saucer, "saucer");
+    R.gClosed = el("g", {}, R.layer);
+    img(R.gClosed, "gclosed");
     R.gaiwan = el("g", {}, R.layer);
     R.gShadow = el("g", {}, R.gaiwan);
     R.gBowl = el("g", {}, R.gaiwan);
@@ -831,12 +836,12 @@
     appear(R.caddy, 1);
     appear(R.wash, 3);
     appear(R.vase, 5);
+    appear(R.scoop, 5);
     const gOff = appear(R.gaiwan, 2);
     const lip = L.gaiwanLip, br = q.bowlRim;
     R.gaiwan.setAttribute("transform", `translate(${HOME.gaiwan.x + s.gx},${HOME.gaiwan.y + s.gy + gOff})`);
     R.saucer.setAttribute("transform", `translate(${HOME.gaiwan.x},${HOME.gaiwan.y + gOff})`);
     R.saucer.style.opacity = R.gaiwan.style.opacity;
-    R.saucer.style.display = glass ? "none" : "";
     R.gBowl.setAttribute("transform", `rotate(${s.gr} ${lip.x} ${lip.y})`);
     // 蓋碗內：乾茶→濕葉→茶湯
     const wetK = Math.max(0, Math.min(1, s.gLevel * 3 + s.gTint * 2));
@@ -856,6 +861,12 @@
     const lidOn = { x: br.cx + s.lidX - 4 * s.lidGap, y: br.cy + 1 - 0.6 * s.lidGap, r: s.lidR - 5 * s.lidGap }, lidOff = { x: br.cx + br.rx + 18, y: -10, r: -58 };
     R.lid.setAttribute("transform", `translate(${lerp(lidOff.x, lidOn.x, lk)},${lerp(lidOff.y, lidOn.y, lk)}) rotate(${lerp(lidOff.r, lidOn.r, lk)})`);
     R.gFront.style.display = lk > 0.6 ? "" : "none";
+    const closed = !glass && lk > 0.995 && s.lidGap < 0.02 && s.lidX === 0 && s.lidR === 0 && s.gr === 0 && s.gx === 0 && s.gy === 0;
+    R.gClosed.setAttribute("transform", `translate(${HOME.gaiwan.x},${HOME.gaiwan.y + gOff})`);
+    R.gClosed.style.opacity = R.gaiwan.style.opacity;
+    R.gClosed.style.display = closed ? "" : "none";
+    R.saucer.style.display = glass || closed ? "none" : "";
+    R.gaiwan.style.display = glass || closed ? "none" : "";
     if (!glass && lk < 0.5 && lv > 0.15) emit.push({ k: "gst", type: "steam", x: HOME.gaiwan.x + s.gx + br.cx, y: HOME.gaiwan.y + s.gy + br.cy - 4, rate: 3.2, spread: br.rx, lift: 0.8, alpha: 0.35 });
 
     // 公道杯

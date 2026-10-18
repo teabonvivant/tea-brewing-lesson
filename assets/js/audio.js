@@ -1,4 +1,4 @@
-/* 茶席音效與背景音樂。音效全部由 Web Audio 即時合成（不載入音檔），背景音樂為古琴古曲（加廳堂殘響），按清單連播。預設靜音，須按掣開啟。 */
+/* 茶席音效與背景音樂。倒水聲為真實錄音（公共領域，見頁腳），其餘輕柔音效由 Web Audio 即時合成，背景音樂為古琴古曲（加廳堂殘響），按清單連播。預設靜音，須按掣開啟。 */
 (function () {
   const KEY = "tea-audio";
   const TRACKS = [
@@ -12,7 +12,7 @@
   const listeners = [];
   const emitChange = () => listeners.forEach((f) => f({ sfx: prefs.sfx, music: prefs.music, track: prefs.track }));
 
-  let ctx = null, master = null, sfxBus = null, noise = null, pourBand = null, pourGain = null;
+  let ctx = null, master = null, sfxBus = null, noise = null, pourBand = null, pourGain = null, pourSrc = null;
   let musicEl = null, fadeTimer = 0;
   const src = {};            // 每個畫面各自的前一幀狀態
   const pourWant = {};       // 每個畫面想要的水聲強度與音高
@@ -29,7 +29,7 @@
     // 柔化：切走高頻刺耳成分，再加一點廳堂殘響，令音效圓潤有空間
     const soft = ctx.createBiquadFilter(); soft.type = "lowpass"; soft.frequency.value = 4800; soft.Q.value = 0.5;
     const dry = ctx.createGain(); dry.gain.value = 0.8;
-    const wet = ctx.createGain(); wet.gain.value = 0.28;
+    const wet = ctx.createGain(); wet.gain.value = 0.18;
     const ir = ctx.createBuffer(2, Math.floor(ctx.sampleRate * 1.7), ctx.sampleRate);
     for (let c = 0; c < 2; c++) { const d = ir.getChannelData(c); let lp = 0; for (let i = 0; i < d.length; i++) { const w = Math.random() * 2 - 1; lp += (w - lp) * 0.32; d[i] = lp * Math.pow(1 - i / d.length, 3.2); } }
     const conv = ctx.createConvolver(); conv.buffer = ir;
@@ -37,11 +37,13 @@
     const len = ctx.sampleRate * 2, buf = ctx.createBuffer(1, len, ctx.sampleRate), d = buf.getChannelData(0);
     for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
     noise = buf;
-    // 水聲：以大量細小水泡（正弦滑音）疊成，另加一層極輕的低通水流底色；不用白噪音，所以柔而不刺
-    const loop = (off) => { const s = ctx.createBufferSource(); s.buffer = noise; s.loop = true; s.start(0, off); return s; };
-    pourBand = ctx.createBiquadFilter(); pourBand.type = "lowpass"; pourBand.frequency.value = 1400; pourBand.Q.value = 0.4;
+    // 水聲：真實倒水錄音循環播放，音量、音高與亮度隨水流和水位變化
+    pourBand = ctx.createBiquadFilter(); pourBand.type = "lowpass"; pourBand.frequency.value = 3200; pourBand.Q.value = 0.3;
     pourGain = ctx.createGain(); pourGain.gain.value = 0;
-    loop(0).connect(pourBand); pourBand.connect(pourGain); pourGain.connect(sfxBus);
+    pourBand.connect(pourGain); pourGain.connect(sfxBus);
+    fetch("assets/audio/water-pour.mp3").then((r) => r.arrayBuffer()).then((ab) => ctx.decodeAudioData(ab)).then((buf) => {
+      pourSrc = ctx.createBufferSource(); pourSrc.buffer = buf; pourSrc.loop = true; pourSrc.connect(pourBand); pourSrc.start(0, 1);
+    }).catch(() => {});
     return ctx;
   }
 
@@ -58,23 +60,19 @@
     const s = ctx.createBufferSource(); s.buffer = noise; const b = ctx.createBiquadFilter(); b.type = "lowpass"; b.frequency.value = f; b.Q.value = q || 0.5;
     const g = ctx.createGain(); env(g, t, peak, 0.01, dur); s.connect(b); b.connect(g); g.connect(sfxBus); s.start(t, Math.random()); s.stop(t + dur + 0.05);
   }
-  /* 單顆水泡：音高上滑的短正弦，像水滴落入水面 */
-  function blip(t, f, peak, dur) {
-    const o = ctx.createOscillator(), g = ctx.createGain();
-    o.frequency.setValueAtTime(f, t); o.frequency.exponentialRampToValueAtTime(f * 1.5, t + dur * 0.7);
-    env(g, t, peak, 0.003, dur); o.connect(g); g.connect(sfxBus); o.start(t); o.stop(t + dur + 0.04);
-  }
+  /* 輕柔的放置聲：低頻短促的悶響，沒有叮噹的金屬或瓷鳴 */
+  function thud(f, peak) { const t = now(); tone(f * (0.95 + Math.random() * 0.1), t, peak, 0.1); burst(t, 0.05, 420, 0.3, peak * 0.4); }
   const SND = {
-    porcelain() { const t = now(), f = 1560 * (0.95 + Math.random() * 0.1); [[1, 0.075, 0.55], [2.4, 0.03, 0.3], [4.3, 0.012, 0.16]].forEach(([m, p, d]) => tone(f * m, t, p, d)); },
-    glass() { const t = now(), f = 2050 * (0.95 + Math.random() * 0.1); [[1, 0.06, 0.7], [2.2, 0.025, 0.4], [3.9, 0.01, 0.22]].forEach(([m, p, d]) => tone(f * m, t, p, d)); },
-    wood() { const t = now(); tone(150 * (0.95 + Math.random() * 0.1), t, 0.1, 0.12); burst(t, 0.04, 700, 0.5, 0.02); },
-    metal() { const t = now(); [[1, 0.05, 0.5], [2.7, 0.02, 0.3]].forEach(([m, p, d]) => tone(780 * m, t, p, d)); },
-    chime() { const t = now(); tone(1046, t, 0.05, 2.2); tone(1046 * 2.0, t, 0.016, 1.5); tone(1046 * 3.0, t, 0.007, 1); },
-    drip() { blip(now(), 900 + Math.random() * 400, 0.05, 0.14); },
+    porcelain() { thud(210, 0.05); },
+    glass() { thud(260, 0.04); },
+    wood() { thud(150, 0.05); },
+    metal() { thud(180, 0.035); },
+    chime() {},
+    drip() {},
     bubble() {},
-    rustle() { const t = now(); burst(t, 0.16, 3200, 0.5, 0.014); },
-    sip() { const t = now(), s = ctx.createBufferSource(); s.buffer = noise; const b = ctx.createBiquadFilter(); b.type = "lowpass"; b.Q.value = 1; b.frequency.setValueAtTime(700, t); b.frequency.exponentialRampToValueAtTime(1800, t + 0.45); const g = ctx.createGain(); env(g, t, 0.035, 0.12, 0.4); s.connect(b); b.connect(g); g.connect(sfxBus); s.start(t, Math.random()); s.stop(t + 0.7); },
-    cloth() { burst(now(), 0.14, 500, 0.4, 0.02); }
+    rustle() { const t = now(); burst(t, 0.16, 2600, 0.4, 0.012); },
+    sip() { const t = now(), s = ctx.createBufferSource(); s.buffer = noise; const b = ctx.createBiquadFilter(); b.type = "lowpass"; b.Q.value = 1; b.frequency.setValueAtTime(600, t); b.frequency.exponentialRampToValueAtTime(1400, t + 0.45); const g = ctx.createGain(); env(g, t, 0.03, 0.12, 0.4); s.connect(b); b.connect(g); g.connect(sfxBus); s.start(t, Math.random()); s.stop(t + 0.7); },
+    cloth() { burst(now(), 0.14, 500, 0.4, 0.018); }
   };
   function play(name, key, gap) {
     if (!prefs.sfx || !ctx || ctx.state !== "running") return;
@@ -113,13 +111,9 @@
     let v = 0, fill = 0, thin = 1;
     for (const k in pourWant) { const w = pourWant[k]; if (w && w.v > v) { v = w.v; fill = w.fill; thin = w.thin; } }
     const on = prefs.sfx && v > 0;
-    pourGain.gain.setTargetAtTime(on ? 0.05 * v * thin : 0, t, 0.08);
-    pourBand.frequency.setTargetAtTime(700 + 1100 * fill, t, 0.1);
-    if (on && ctx.state === "running") {
-      // 每 60 ms 約排 3–5 顆水泡；水位愈高音高愈高，細水流泡更小更疏
-      const n = Math.round((2 + 3 * v) * thin + Math.random());
-      for (let i = 0; i < n; i++) blip(t + Math.random() * 0.06, (620 + 1500 * fill) * (0.8 + Math.random() * 0.7), (0.008 + Math.random() * 0.014) * v, 0.05 + Math.random() * 0.07);
-    }
+    pourGain.gain.setTargetAtTime(on ? 0.5 * v * thin : 0, t, 0.12);
+    pourBand.frequency.setTargetAtTime(2400 + 3200 * fill, t, 0.15);
+    if (pourSrc) pourSrc.playbackRate.setTargetAtTime((0.92 + 0.22 * fill) * (thin < 1 ? 1.06 : 1), t, 0.2);
   }
   setInterval(frameUpdate, 60);
 
