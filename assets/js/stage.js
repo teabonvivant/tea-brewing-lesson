@@ -813,14 +813,15 @@
       const x = u * u * a.x + 2 * u * t * c.x + t * t * b.x, y = u * u * a.y + 2 * u * t * c.y + t * t * b.y;
       const tx = 2 * u * (c.x - a.x) + 2 * t * (b.x - c.x), ty = 2 * u * (c.y - a.y) + 2 * t * (b.y - c.y);
       const m = Math.hypot(tx, ty) || 1, nx = -ty / m, ny = tx / m;
-      const w = w0 * (1 - 0.35 * t) * (1 + 0.1 * Math.sin(now / 70 + t * 11)) * Math.min(1, on * 1.4);
+      const w = w0 * 0.8 * (1 - 0.5 * t) * (1 + 0.06 * Math.sin(now / 90 - t * 9)) * Math.min(1, on * 1.4);
       left.push([x + nx * w / 2, y + ny * w / 2]); right.push([x - nx * w / 2, y - ny * w / 2]); mid.push([x + nx * w * 0.14, y + ny * w * 0.14]);
     }
     const f = (p) => p[0].toFixed(1) + " " + p[1].toFixed(1);
     S.body.setAttribute("d", "M" + left.map(f).join("L") + "L" + right.reverse().map(f).join("L") + "Z");
-    S.body.setAttribute("fill", col); S.body.style.fillOpacity = 0.6; S.body.setAttribute("stroke", "#fff"); S.body.setAttribute("stroke-opacity", 0.35); S.body.setAttribute("stroke-width", 0.5);
+    S.body.setAttribute("fill", col); S.body.style.fillOpacity = 0.46; S.body.setAttribute("stroke", "#fff"); S.body.setAttribute("stroke-opacity", 0.5); S.body.setAttribute("stroke-width", 0.5);
     S.hi.setAttribute("d", "M" + mid.map(f).join("L"));
-    S.hi.setAttribute("stroke-width", Math.max(0.8, w0 * 0.22)); S.hi.style.strokeOpacity = hiOp || 0.7;
+    S.hi.setAttribute("stroke-width", Math.max(0.7, w0 * 0.16)); S.hi.style.strokeOpacity = hiOp || 0.7;
+    S.hi.setAttribute("stroke-dasharray", "14 7 5 7"); S.hi.setAttribute("stroke-dashoffset", (-now / 14).toFixed(1));
   }
 
   /* ---------- 特效：水花、漣漪、水氣 ---------- */
@@ -832,7 +833,7 @@
       while (F.acc[e.k] >= 1) {
         F.acc[e.k] -= 1;
         if (e.type === "steam") spawn(F.steam, (p) => { p.x = e.x + (Math.random() - 0.5) * e.spread; p.y = e.y; p.vx = (Math.random() - 0.5) * 6; p.vy = -(10 + Math.random() * 8) * e.lift; p.r0 = 4 + Math.random() * 3; p.a = e.alpha; p.dur = 2.2 + Math.random() * 1.2; p.t = 0; });
-        else if (e.type === "splash") spawn(F.splash, (p) => { p.x = e.x + (Math.random() - 0.5) * 5; p.y = e.y; p.vx = (Math.random() - 0.5) * 44; p.vy = -(26 + Math.random() * 46); p.dur = 0.55; p.t = 0; });
+        else if (e.type === "splash") spawn(F.splash, (p) => { p.x = e.x + (Math.random() - 0.5) * 5; p.y = e.y; p.vx = (Math.random() - 0.5) * 22; p.vy = -(12 + Math.random() * 22); p.dur = 0.45; p.t = 0; });
         else if (e.type === "ripple") spawn(F.ripples, (p) => { p.x = e.x; p.y = e.y; p.w = e.w; p.dur = 1.0; p.t = 0; });
       }
     });
@@ -928,9 +929,7 @@
     const lidOn = { x: br.cx + s.lidX - 4 * s.lidGap * gdir, y: br.cy + 1 - 0.6 * s.lidGap, r: s.lidR - 5 * s.lidGap * gdir }, lidOff = { x: br.cx - br.rx - 14, y: br.cy + 38, r: -8 };
     R.lid.setAttribute("transform", `translate(${lerp(lidOff.x, lidOn.x, lk)},${lerp(lidOff.y, lidOn.y, lk)}) rotate(${lerp(lidOff.r, lidOn.r, lk)})`);
     R.gFront.style.display = lk > 0.6 ? "" : "none";
-    R.gHand.style.opacity = s.hd.toFixed(3);
-    R.gHand.style.display = s.hd > 0.01 && !glass ? "" : "none";
-    R.gBowlParts.forEach((n) => { n.style.opacity = s.hd > 0.99 ? 0 : ""; });
+    R.gHand.style.display = "none";
     const closed = !glass && lk > 0.99 && s.lidGap < 0.02 && Math.abs(s.lidX) < 0.05 && Math.abs(s.lidR) < 0.05 && Math.abs(s.gr) < 0.05 && Math.abs(s.gx) < 0.05 && Math.abs(s.gy) < 0.05;
     const ck = R.closedK = quiet || R.closedK == null ? (closed ? 1 : 0) : (R.closedK || 0) + ((closed ? 1 : 0) - (R.closedK || 0)) * (1 - Math.exp(-Math.max(dt, 0.001) / 0.07));
     const gOp = +R.gaiwan.style.opacity;
@@ -952,9 +951,7 @@
     R.pSurface.setAttribute("cy", pTop); R.pSurface.setAttribute("transform", `rotate(${-s.pr} 0 ${pTop})`);
     R.pLiquid.setAttribute("fill", mixColor(WATER, teaCol, s.pTint));
     const pOn = s.pLevel > 0.01;
-    R.pHand.style.opacity = s.ph.toFixed(3);
-    R.pHand.style.display = s.ph > 0.01 && !glass ? "" : "none";
-    R.pImg.style.opacity = (1 - 0.1 * Math.min(1, s.pLevel * 8)).toFixed(2);
+        R.pImg.style.opacity = (1 - 0.1 * Math.min(1, s.pLevel * 8)).toFixed(2);
     R.pLiquid.style.opacity = pOn ? 0.74 : 0; R.pLiquidDepth.style.opacity = pOn ? 1 : 0; R.pSurface.style.opacity = pOn ? 1 : 0;
     if (!glass && pOn && s.pLevel > 0.12 && s.pr > -12) emit.push({ k: "pst", type: "steam", x: HOME.pitcher.x + s.px + q.pRim.cx, y: HOME.pitcher.y + s.py + q.pRim.cy - 2, rate: 2.2, spread: 36, lift: 0.8, alpha: 0.3 });
 
@@ -966,11 +963,7 @@
       let x = HOME.cups[i].x + s["u" + i], y = HOME.cups[i].y + off + s["y" + i], sc = 1, r = s["r" + i];
       if (i === 1) { x += s.c1x; y += s.c1y; sc = s.c1s; r += s.c1r; y -= s.sip * 10; }
       c.g.setAttribute("transform", `translate(${x},${y}) scale(${sc}) rotate(${r} ${cr.cx} ${cr.cy + 8})`);
-      const chk = i === 1 && !glass ? s.ch : 0;
-      c.cHand.style.opacity = chk.toFixed(3);
-      c.cHand.style.display = chk > 0.01 ? "" : "none";
-      c.cImg.style.opacity = chk > 0.99 ? 0 : "";
-      const on = l > 0.02;
+            const on = l > 0.02;
       const cy = cr.cy + (1 - l) * cr.ry * 1.05, rx = cr.rx * 0.9 * (0.7 + 0.3 * l), ry = cr.ry * 0.82 * (0.7 + 0.3 * l);
       [c.liq, c.depth, c.hi].forEach((e) => { e.setAttribute("cy", cy); e.setAttribute("rx", rx); e.setAttribute("ry", ry); e.style.opacity = on ? 1 : 0; });
       c.liq.style.opacity = on ? 0.95 : 0;
@@ -1093,11 +1086,11 @@
     const cLo = rot({ x: L.cupCx - L.cupRx * 0.95, y: L.cupRim }, cpiv, s["r" + ci2]);
     const cW = { x: HOME.cups[ci2].x + s["u" + ci2] + cLo.x, y: HOME.cups[ci2].y + s["y" + ci2] + cLo.y }, cTo = { x: cW.x - 2, y: wm.y };
     ribbon(R.sC, s.sC, cW, cTo, { x: 0.5, y: 0.6 }, 3.4, mixColor(WATER, deep, s.cTint), now, 0.55);
-    const lands = [[s.sK, kTarget, 22, 26], glass ? [s.sW, wTo, 16, 14] : [s.sG, gTo, 20, 14], [s.sP, cupTo, 12, 7], [s.sC, cTo, 14, 10]];
+    const lands = [[s.sK, kTarget, 18, 8], glass ? [s.sW, wTo, 14, 5] : [s.sG, gTo, 16, 5], [s.sP, cupTo, 10, 2.5], [s.sC, cTo, 12, 4]];
     lands.forEach(([on, p, w, sr], i) => {
       if (on > 0.5) {
         emit.push({ k: "sp" + i, type: "splash", x: p.x, y: p.y, rate: sr * on });
-        emit.push({ k: "rp" + i, type: "ripple", x: p.x, y: p.y, w, rate: 3.2 });
+        emit.push({ k: "rp" + i, type: "ripple", x: p.x, y: p.y, w, rate: 1.8 });
       }
     });
 
@@ -1252,7 +1245,7 @@
     return {
       load(newTea, id, autoplay, handInfo) {
         tea = newTea; clipId = id; clip = buildClip(id, tea);
-        hand = handInfo || null; paintHand(); handBox.classList.remove("on"); hudTemp.style.visibility = "";
+        hand = null; paintHand(); handBox.classList.remove("on"); hudTemp.style.visibility = "";
         t = 0; playing = !!autoplay;
         if (!autoplay) t = reduce || id === "prepare" ? clip.dur : 0;
         last = performance.now(); setRun(playing);
