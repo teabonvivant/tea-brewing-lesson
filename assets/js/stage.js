@@ -51,9 +51,25 @@
     return n;
   }
 
+  /* 單調三次插值：經過中間關鍵幀時速度連貫，在停頓／折返處自然減速到零，動作不再一段一段起停 */
+  function tangents(tr) {
+    if (tr.some((k) => typeof k[1] !== "number")) return null;
+    const n = tr.length, m = new Array(n).fill(0), h = [], d = [];
+    for (let i = 0; i < n - 1; i++) { h[i] = tr[i + 1][0] - tr[i][0]; d[i] = h[i] > 1e-6 ? (tr[i + 1][1] - tr[i][1]) / h[i] : 0; }
+    for (let i = 1; i < n - 1; i++) {
+      if (d[i - 1] * d[i] <= 0 || h[i - 1] < 1e-6 || h[i] < 1e-6) continue;
+      m[i] = (3 * (h[i - 1] + h[i])) / ((2 * h[i] + h[i - 1]) / d[i - 1] + (h[i] + 2 * h[i - 1]) / d[i]);
+    }
+    return m;
+  }
+  function hermite(v0, v1, m0, m1, h, u) {
+    const u2 = u * u, u3 = u2 * u;
+    return (2 * u3 - 3 * u2 + 1) * v0 + (u3 - 2 * u2 + u) * h * m0 + (-2 * u3 + 3 * u2) * v1 + (u3 - u2) * h * m1;
+  }
+
   /* ---------- 時間軸 ---------- */
   class Clip {
-    constructor(base) { this.base = base; this.tracks = {}; this.dur = 0; this.labels = []; }
+    constructor(base) { this.base = base; this.tracks = {}; this.tan = {}; this.dur = 0; this.labels = []; }
     key(name, t, v) {
       (this.tracks[name] = this.tracks[name] || []).push([t, v]);
       if (t > this.dur) this.dur = t;
@@ -65,6 +81,7 @@
       for (const n in this.tracks) {
         const tr = this.tracks[n].sort((a, b) => a[0] - b[0]);
         if (tr[0][0] > 0) tr.unshift([0, this.base[n] !== undefined ? this.base[n] : tr[0][1]]);
+        this.tan[n] = tangents(tr);
       }
       this.labels.sort((a, b) => a[0] - b[0]);
       this.dur += extra;
@@ -79,7 +96,10 @@
         for (let i = 0; i < tr.length - 1; i++) {
           const [t0, v0] = tr[i], [t1, v1] = tr[i + 1];
           if (t >= t0 && t <= t1) {
-            s[n] = typeof v0 === "number" && typeof v1 === "number" ? lerp(v0, v1, ease((t - t0) / (t1 - t0 || 1))) : v0;
+            const m = this.tan[n];
+            if (typeof v0 !== "number" || typeof v1 !== "number") s[n] = v0;
+            else if (!m || t1 - t0 < 1e-6) s[n] = lerp(v0, v1, ease((t - t0) / (t1 - t0 || 1)));
+            else s[n] = hermite(v0, v1, m[i], m[i + 1], t1 - t0, (t - t0) / (t1 - t0));
             break;
           }
         }
@@ -100,6 +120,7 @@
       u0: 0, u1: 0, u2: 0, tg: 0, tgi: 0, sC: 0, hp: 0, hpw: 0, c0: 0, c1: 0, c2: 0, cTint: 1, c1x: 0, c1y: 0, c1s: 1, c1r: 0, r0: 0, r1: 0, r2: 0, y0: 0, y1: 0, y2: 0, lidGap: 0, sW: 0,
       hx: 0, hy: 0, hr: 0, hs: 1, hLeaves: 0, fall: 0,
       tr: 0, gd: 1, sK: 0, sKTea: 0, sG: 0, sP: 0, sGTarget: "pitcher", pTarget: 0,
+      cw: 0, cx: 400, cy: 250, cz: 1,
       drop: 0, dropTarget: 0, timer: 0, timerText: "", steamCup: 0, sip: 0, temp: 1
     };
   }
@@ -254,23 +275,23 @@
           t = pitcherPour(c, t - 0.2, 2, 0.45, 0.2, 0, 0, 0.6);
           t = pitcherHome(c, t);
           c.label(t, "從茶道組取出茶夾");
-          const step = 4.9, t1 = t + 0.1 + 3 * step;
+          const F = 0.68, step = 4.9 * F, t1 = t + 0.1 + 3 * step;
           c.key("tr", t, 0).key("tr", t + 0.8, 1).hold("tr", t + 0.8, t1 - 0.2, 1).key("tr", t1 + 0.8, 0);
           [0, 1, 2].forEach((i) => {
             const u = t + 0.9 + i * step, a = aimCupToWash(i, 105, 12);
-            c.label(u + 0.4, i === 0 ? "茶夾夾住杯沿，提起品茗杯" : "再夾第 " + (i + 1) + " 隻杯").label(u + 1.2, "轉動杯身，令杯壁均勻受熱").label(u + 3.0, "傾杯，把水倒入水洗");
-            c.hold("tgi", u - 0.3, u + 4.0, i)
-              .key("tg", u, 0).key("tg", u + 0.5, 1).key("tg", u + 4.4, 1).key("tg", u + 4.7, 0)
-              .key("u" + i, u + 0.5, 0).key("y" + i, u + 0.5, 0).key("r" + i, u + 0.5, 0)
-              .key("y" + i, u + 1.0, -26)
-              .key("r" + i, u + 1.2, 0).key("r" + i, u + 1.5, -16).key("r" + i, u + 1.85, 16).key("r" + i, u + 2.2, -16).key("r" + i, u + 2.5, 0)
-              .key("u" + i, u + 2.5, 0).key("y" + i, u + 2.5, -26)
-              .key("u" + i, u + 3.3, a.u).key("y" + i, u + 3.3, a.y).key("r" + i, u + 3.3, -105)
-              .hold("sC", u, u + 3.3, 0).key("sC", u + 3.5, 1).key("sC", u + 3.95, 1).key("sC", u + 4.15, 0)
-              .key("c" + i, u + 3.4, 0.6).key("c" + i, u + 4.1, 0)
-              .key("u" + i, u + 4.2, a.u).key("y" + i, u + 4.2, a.y).key("r" + i, u + 4.2, -105)
-              .key("u" + i, u + 4.4, 0).key("y" + i, u + 4.4, -10).key("r" + i, u + 4.4, 0)
-              .key("y" + i, u + 4.7, 0);
+            c.label(u + 0.27, i === 0 ? "茶夾夾住杯沿，提起品茗杯" : "再夾第 " + (i + 1) + " 隻杯").label(u + 0.82, "轉動杯身，令杯壁均勻受熱").label(u + 2.04, "傾杯，把水倒入水洗");
+            c.hold("tgi", u - 0.2, u + 2.72, i)
+              .key("tg", u, 0).key("tg", u + 0.34, 1).key("tg", u + 2.99, 1).key("tg", u + 3.20, 0)
+              .key("u" + i, u + 0.34, 0).key("y" + i, u + 0.34, 0).key("r" + i, u + 0.34, 0)
+              .key("y" + i, u + 0.68, -26)
+              .key("r" + i, u + 0.82, 0).key("r" + i, u + 1.02, -16).key("r" + i, u + 1.26, 16).key("r" + i, u + 1.50, -16).key("r" + i, u + 1.70, 0)
+              .key("u" + i, u + 1.70, 0).key("y" + i, u + 1.70, -26)
+              .key("u" + i, u + 2.24, a.u).key("y" + i, u + 2.24, a.y).key("r" + i, u + 2.24, -105)
+              .hold("sC", u, u + 2.24, 0).key("sC", u + 2.38, 1).key("sC", u + 2.69, 1).key("sC", u + 2.82, 0)
+              .key("c" + i, u + 2.31, 0.6).key("c" + i, u + 2.79, 0)
+              .key("u" + i, u + 2.86, a.u).key("y" + i, u + 2.86, a.y).key("r" + i, u + 2.86, -105)
+              .key("u" + i, u + 2.99, 0).key("y" + i, u + 2.99, -10).key("r" + i, u + 2.99, 0)
+              .key("y" + i, u + 3.20, 0);
           });
         }
         break;
@@ -298,6 +319,8 @@
           .key("hr", t0 + 1.3, -36).key("fall", t0 + 1.2, 0).key("fall", t0 + 2.9, 1)
           .key("hLeaves", t0 + 1.2, 1).key("hLeaves", t0 + 2.8, 0).key(glass ? "wLeaves" : "gLeaves", t0 + 1.5, 0).key(glass ? "wLeaves" : "gLeaves", t0 + 2.9, 1)
           .key("hr", t0 + 3.0, -36).key("hr", t0 + 3.4, 0).key("hx", t0 + 3.0, hx).key("hy", t0 + 3.0, hy).key("hx", t0 + 4.0, 0).key("hy", t0 + 4.0, 0);
+        c.key("cw", t0 - 0.2, 0).key("cw", t0 + 0.6, 1).key("cw", t0 + 4.2, 1).key("cw", t0 + 5.0, 0)
+          .key("cx", 0, (HOME.chahe.x + tgt.x) / 2).key("cy", 0, (HOME.chahe.y + tgt.y) / 2 - 48).key("cz", 0, 1.35);
         if (glass) {
           c.label(t0 + 4.0, "輕搖杯身，令茶葉吸水舒展").key("wTint", t0 + 3.0, 0).key("wTint", t0 + 5.4, 0.25)
             .key("wr", t0 + 4.1, 0).key("wr", t0 + 4.5, -7).key("wr", t0 + 4.9, 7).key("wr", t0 + 5.3, 0);
@@ -339,10 +362,11 @@
         break;
       case "pour":
         c.label(0, "三指法：拇指中指扣碗沿，食指按蓋鈕");
-        gaiwanPour(c, 0.4, pitcherTop(), 1.8, 0.8);
-        c.key("pTint", 0, 1).key("pLevel", 1.5, 0).key("pLevel", 3.3, 0.82);
-        c.label(1.6, "留一道縫出湯，茶葉留在碗內").label(3.4, "最後幾滴也要瀝乾");
-        c.key("drop", 3.4, 0).key("drop", 3.9, 0.999).key("dropTarget", 0, "pitcher");
+        gaiwanPour(c, 0.6, pitcherTop(), 2.6, 0.8);
+        c.key("pTint", 0, 1).key("pLevel", 2.0, 0).key("pLevel", 4.2, 0.82);
+        c.label(2.0, "留一道縫出湯，茶葉留在碗內").label(4.4, "最後幾滴也要瀝乾");
+        c.key("drop", 4.4, 0).key("drop", 5.0, 0.999).key("drop", 5.01, 0).key("dropTarget", 0, "pitcher");
+        c.key("cw", 0, 0).key("cw", 0.7, 1).key("cw", 5.0, 1).key("cw", 5.7, 0).key("cx", 0, 392).key("cy", 0, 204).key("cz", 0, 1.75);
         break;
       case "share": {
         c.label(0, "公道杯分茶・低斟");
@@ -350,7 +374,8 @@
         t = pitcherPour(c, t - 0.3, 1, 0.8, 0.55, 0.3, 0, 0.7);
         c.label(t - 0.6, "每杯七分滿，濃淡一致");
         t = pitcherPour(c, t - 0.3, 2, 0.8, 0.3, 0.06, 0, 0.7);
-        pitcherHome(c, t);
+        t = pitcherHome(c, t);
+        c.key("cw", 0, 0).key("cw", 0.6, 1).key("cw", t - 0.4, 1).key("cw", t + 0.4, 0).key("cx", 0, 400).key("cy", 0, 330).key("cz", 0, 1.6);
         break;
       }
       case "serve":
@@ -360,9 +385,11 @@
           c.label(2.2, "請用茶").key("steamCup", 0, 0).key("steamCup", 2, 1);
         } else {
           c.label(0, "雙手托杯，奉到客人面前");
-          c.key("c1x", 0.3, 0).key("c1y", 0.3, 0).key("c1s", 0.3, 1).key("c1y", 0.9, -14).key("c1x", 2.2, 30).key("c1y", 2.2, 80).key("c1s", 2.2, 1.12);
-          c.label(2.4, "輕放在客人右前方：「請用茶」").key("steamCup", 0, 0).key("steamCup", 2.2, 1);
-          c.label(4.0, "客人以「叩指禮」回禮");
+          c.key("c1x", 0.4, 0).key("c1y", 0.4, 0).key("c1s", 0.4, 1).key("c1y", 1.1, -14).key("c1y", 1.5, -14).key("c1x", 3.2, 30).key("c1y", 3.2, 72).key("c1s", 3.2, 1.12)
+            .key("c1y", 3.55, 82).key("c1y", 3.8, 80).key("c1x", 3.8, 30).key("c1s", 3.8, 1.12);
+          c.label(3.3, "輕放在客人右前方：「請用茶」").key("steamCup", 0, 0).key("steamCup", 3.4, 1);
+          c.label(4.8, "客人以「叩指禮」回禮").key("steamCup", 6.4, 1);
+          c.key("cw", 0, 0).key("cw", 0.6, 1).key("cw", 6.0, 1).key("cw", 6.6, 0).key("cx", 0, 410).key("cy", 0, 330).key("cz", 0, 1.6);
         }
         break;
       case "smell":
@@ -883,12 +910,14 @@
     const lidOn = { x: br.cx + s.lidX - 4 * s.lidGap * gdir, y: br.cy + 1 - 0.6 * s.lidGap, r: s.lidR - 5 * s.lidGap * gdir }, lidOff = { x: br.cx - br.rx - 14, y: br.cy + 38, r: -8 };
     R.lid.setAttribute("transform", `translate(${lerp(lidOff.x, lidOn.x, lk)},${lerp(lidOff.y, lidOn.y, lk)}) rotate(${lerp(lidOff.r, lidOn.r, lk)})`);
     R.gFront.style.display = lk > 0.6 ? "" : "none";
-    const closed = !glass && lk > 0.995 && s.lidGap < 0.02 && s.lidX === 0 && s.lidR === 0 && s.gr === 0 && s.gx === 0 && s.gy === 0;
+    const closed = !glass && lk > 0.99 && s.lidGap < 0.02 && Math.abs(s.lidX) < 0.05 && Math.abs(s.lidR) < 0.05 && Math.abs(s.gr) < 0.05 && Math.abs(s.gx) < 0.05 && Math.abs(s.gy) < 0.05;
+    const ck = R.closedK = quiet || R.closedK == null ? (closed ? 1 : 0) : (R.closedK || 0) + ((closed ? 1 : 0) - (R.closedK || 0)) * (1 - Math.exp(-Math.max(dt, 0.001) / 0.07));
+    const gOp = +R.gaiwan.style.opacity;
     R.gClosed.setAttribute("transform", `translate(${HOME.gaiwan.x},${HOME.gaiwan.y + gOff})`);
-    R.gClosed.style.opacity = R.gaiwan.style.opacity;
-    R.gClosed.style.display = closed ? "" : "none";
-    R.saucer.style.display = glass || closed ? "none" : "";
-    R.gaiwan.style.display = glass || closed ? "none" : "";
+    R.gClosed.style.opacity = (gOp * ck).toFixed(3);
+    R.gClosed.style.display = ck > 0.01 && !glass ? "" : "none";
+    R.saucer.style.display = glass || ck > 0.99 ? "none" : "";
+    R.gaiwan.style.display = glass || ck > 0.99 ? "none" : "";
     if (!glass && lk < 0.5 && lv > 0.15) emit.push({ k: "gst", type: "steam", x: HOME.gaiwan.x + s.gx + br.cx, y: HOME.gaiwan.y + s.gy + br.cy - 4, rate: 3.2, spread: br.rx, lift: 0.8, alpha: 0.35 });
 
     // 公道杯
@@ -902,8 +931,8 @@
     R.pSurface.setAttribute("cy", pTop); R.pSurface.setAttribute("transform", `rotate(${-s.pr} 0 ${pTop})`);
     R.pLiquid.setAttribute("fill", mixColor(WATER, teaCol, s.pTint));
     const pOn = s.pLevel > 0.01;
-    R.pImg.style.opacity = (1 - 0.4 * Math.min(1, s.pLevel * 8)).toFixed(2);
-    R.pLiquid.style.opacity = pOn ? 0.9 : 0; R.pLiquidDepth.style.opacity = pOn ? 1 : 0; R.pSurface.style.opacity = pOn ? 1 : 0;
+    R.pImg.style.opacity = (1 - 0.1 * Math.min(1, s.pLevel * 8)).toFixed(2);
+    R.pLiquid.style.opacity = pOn ? 0.74 : 0; R.pLiquidDepth.style.opacity = pOn ? 1 : 0; R.pSurface.style.opacity = pOn ? 1 : 0;
     if (!glass && pOn && s.pLevel > 0.12 && s.pr > -12) emit.push({ k: "pst", type: "steam", x: HOME.pitcher.x + s.px + q.pRim.cx, y: HOME.pitcher.y + s.py + q.pRim.cy - 2, rate: 2.2, spread: 36, lift: 0.8, alpha: 0.3 });
 
     // 品茗杯
@@ -966,7 +995,8 @@
     R.chahe.setAttribute("transform", `translate(${HOME.chahe.x + s.hx},${HOME.chahe.y + s.hy + hOff}) scale(${s.hs})`);
     R.chaheBody.setAttribute("transform", `rotate(${s.hr} ${L.chaheTip.x} ${L.chaheTip.y})`);
     R.chaheShadow.style.opacity = Math.max(0, 1 - Math.abs(s.hy) / 30);
-    R.hPile.style.opacity = s.hLeaves;
+    R.hPile.style.opacity = Math.min(1, s.hLeaves * 1.6);
+    { const py = q.chPile.y + q.chPile.w * 0.36; R.hPile.setAttribute("transform", `translate(${q.chPile.x},${py}) scale(${(0.35 + 0.65 * s.hLeaves).toFixed(3)},${(0.2 + 0.8 * s.hLeaves).toFixed(3)}) translate(${-q.chPile.x},${-py})`); }
     // 茶撥
     const pa = lerp(-12, 12, s.hp) + Math.sin(s.hpw * Math.PI * 4) * 9 * s.hp;
     R.pick.setAttribute("transform", `translate(${44 - 6 * s.hp},${-12 - 3 * s.hp}) scale(-1,1) rotate(${pa})`);
@@ -1036,16 +1066,16 @@
     const cLo = rot({ x: L.cupCx - L.cupRx * 0.95, y: L.cupRim }, cpiv, s["r" + ci2]);
     const cW = { x: HOME.cups[ci2].x + s["u" + ci2] + cLo.x, y: HOME.cups[ci2].y + s["y" + ci2] + cLo.y }, cTo = { x: cW.x - 2, y: wm.y };
     ribbon(R.sC, s.sC, cW, cTo, { x: 0.5, y: 0.6 }, 3.4, mixColor(WATER, deep, s.cTint), now, 0.55);
-    const lands = [[s.sK, kTarget, 22], glass ? [s.sW, wTo, 16] : [s.sG, gTo, 20], [s.sP, cupTo, 12], [s.sC, cTo, 14]];
-    lands.forEach(([on, p, w], i) => {
+    const lands = [[s.sK, kTarget, 22, 26], glass ? [s.sW, wTo, 16, 14] : [s.sG, gTo, 20, 14], [s.sP, cupTo, 12, 7], [s.sC, cTo, 14, 10]];
+    lands.forEach(([on, p, w, sr], i) => {
       if (on > 0.5) {
-        emit.push({ k: "sp" + i, type: "splash", x: p.x, y: p.y, rate: 34 * on });
+        emit.push({ k: "sp" + i, type: "splash", x: p.x, y: p.y, rate: sr * on });
         emit.push({ k: "rp" + i, type: "ripple", x: p.x, y: p.y, w, rate: 3.2 });
       }
     });
 
     // 水滴
-    if (s.drop > 0 && s.drop < 1) {
+    if (s.drop > 0 && s.drop < 1 && (s.dropTarget !== "pitcher" || Math.abs(s.gr) > 25)) {
       let a, bY;
       if (s.dropTarget === "pitcher") { a = lipW; bY = HOME.pitcher.y + L.pFloor - s.pLevel * L.pH; }
       else if (String(s.dropTarget).startsWith("g")) { a = lipW; bY = HOME.cups[ci].y + cr.cy; }
@@ -1077,6 +1107,7 @@
     if (s.sip > 0 && glass) R.glass.setAttribute("transform", R.glass.getAttribute("transform") + ` translate(0,${-s.sip * 14}) rotate(${-s.sip * 16} ${q.tRim.cx} ${q.tRim.cy + 60})`);
 
     // 特效與鏡頭
+    R.lastSteam = emit.filter((e) => e.type === "steam");
     fxUpdate(R, now, dt, quiet ? [] : emit);
     cameraStep(R, s, { tip, kTarget, lipW, gTo, pTipW, cupTo, from, to, br, glass }, dt);
   }
@@ -1095,11 +1126,12 @@
     else if (s.c1y > 20) f = { x: HOME.cups[1].x + s.c1x, y: HOME.cups[1].y + s.c1y - 30, z: 1.7 };
     else if (s.ws > 1.1) f = { x: HOME.glass.x + s.wx, y: HOME.glass.y + s.wy - 50, z: 1.5 };
     else if (Math.abs(s.wr) > 10 || s.wLevel > 0.05 && s.mode === "glass" && s.sK > 0) f = { x: HOME.glass.x + s.wx, y: HOME.glass.y + s.wy - 40, z: 1.6 };
+    if (s.cw > 0.001) f = { x: lerp(f.x, s.cx, s.cw), y: lerp(f.y, s.cy, s.cw), z: lerp(f.z, s.cz, s.cw) };
     f.x = Math.max(400 / f.z, Math.min(800 - 400 / f.z, f.x));
     f.y = Math.max(250 / f.z, Math.min(500 - 250 / f.z, f.y));
     const C = R.cam0;
     if (!R.camSet || R.noCam) { Object.assign(C, R.noCam ? { x: 400, y: 250, z: 1 } : f); R.camSet = true; }
-    else { const k = 1 - Math.exp(-dt / 0.42); C.x += (f.x - C.x) * k; C.y += (f.y - C.y) * k; C.z += (f.z - C.z) * k; }
+    else { const k = 1 - Math.exp(-dt / 0.55); C.x += (f.x - C.x) * k; C.y += (f.y - C.y) * k; C.z += (f.z - C.z) * k; }
     R.cam.setAttribute("transform", `translate(${(400 - C.z * C.x).toFixed(2)},${(250 - C.z * C.y).toFixed(2)}) scale(${C.z.toFixed(4)})`);
   }
 
@@ -1111,7 +1143,7 @@
 
   function createStage(svg, opts = {}) {
     let style = GLOBAL_STYLE;
-    let R = null, tea = null, clip = null, clipId = null, t = 0, playing = false, last = 0, raf = 0, speed = 1, visible = true, ready = false, idleTick = 0, idleSince = 0, hand = null;
+    let R = null, tea = null, clip = null, clipId = null, t = 0, playing = false, last = 0, raf = 0, speed = 1, visible = true, ready = false, idleTick = 0, idleSince = 0, hand = null, idleDt = 0, frozenNow = 0, dirty = true;
     const wrap = svg.parentNode;
     const mk = (tag, cls, html) => { const n = document.createElement(tag); n.className = cls; if (html) n.innerHTML = html; wrap.appendChild(n); return n; };
     const hudTemp = mk("span", "cu-temp");
@@ -1152,9 +1184,16 @@
         }
       }
       last = now;
-      if (clip && (playing || (idleTick++ % 3) === 0)) {
+      idleDt += dtRaw;
+      const live = playing && visible;
+      if (clip && !live && !dirty) {
+        /* 暫停：畫面凍結，只更新水氣粒子 */
+        if ((idleTick++ % 4) === 0) { fxUpdate(R, frozenNow, idleDt, reduce ? [] : R.lastSteam || []); idleDt = 0; }
+      } else if (clip) {
         const s = clip.sample(t);
-        render(R, s, tea, reduce ? 0 : now, dtRaw, reduce);
+        if (dirty && !playing) { R.camSet = false; R.closedK = null; }
+        render(R, s, tea, reduce ? 0 : (live || dirty ? (frozenNow = now) : frozenNow), live || dirty ? dtRaw : idleDt, reduce);
+        idleDt = 0; dirty = false;
         opts.onFrame && opts.onFrame(s, playing, tea);
       }
       opts.onProgress && clip && opts.onProgress(t / clip.dur);
@@ -1165,7 +1204,7 @@
       if (playing || (visible && !reduce && !document.hidden && now - idleSince < 12000)) raf = requestAnimationFrame(frame);
     }
     function setRun(on) { svg.classList.toggle("is-playing", on); }
-    function kick() { if (!raf && ready) raf = requestAnimationFrame((n) => { last = n; idleSince = n; frame(n); }); }
+    function kick() { dirty = true; if (!raf && ready) raf = requestAnimationFrame((n) => { last = n; idleSince = n; frame(n); }); }
     function boot() {
       ready = false;
       svg.classList.add("is-loading");
