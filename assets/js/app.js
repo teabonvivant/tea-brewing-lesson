@@ -25,6 +25,7 @@
   const stage = (window.__teaStage = TeaStage.createStage($("stage"), {
     onProgress: (p) => ($("progressBar").style.width = (p * 100).toFixed(1) + "%"),
     onFrame: (s, playing) => window.TeaAudio && TeaAudio.feed("main", s, playing),
+    onIdle: () => window.TeaAudio && TeaAudio.stop("main"),
     onLabel: (tx) => setLabel($("cuLabel"), tx),
     onState: (playing) => setPlayUI(playing),
     onEnd: () => {
@@ -52,10 +53,14 @@
     const on = a.classList.contains("is-on") ? a : b;
     const off = on === a ? b : a;
     const src = `assets/img/scene/${pose}-960.webp`;
-    if (on.dataset.pose === pose || (on === a && !a.dataset.pose && pose === "greet")) return;
+    if (on.dataset.pose === pose || (on === a && !a.dataset.pose && pose === "greet")) { on.alt = POSE_ALT[pose]; return; }
+    off.onerror = () => { if (off.dataset.pose === pose) { off.dataset.pose = ""; setLabel($("sceneNote"), "這一步的人物圖暫時未能載入，請看右邊的特寫動畫"); } };
     off.onload = () => {
+      if (off.dataset.pose !== pose) return;
+      setLabel($("sceneNote"), "");
       off.classList.add("is-on"); on.classList.remove("is-on");
       off.removeAttribute("aria-hidden"); on.setAttribute("aria-hidden", "true");
+      off.alt = POSE_ALT[pose]; on.alt = "";
     };
     off.dataset.pose = pose;
     off.srcset = `assets/img/scene/${pose}-960.webp 960w, assets/img/scene/${pose}-1536.webp 1536w`;
@@ -105,14 +110,12 @@
   }
 
   function goStep(i, autoplay) {
+    clearTimeout(autoTimer);
     const list = visibleSteps();
     state.step = Math.max(0, Math.min(list.length - 1, i));
     const s = list[state.step], t = state.tea;
     const pose = t.vessel === "glass" ? GLASS_POSE[s.pose] || s.pose : s.pose;
     setPose(pose);
-    $("sceneA").alt = $("sceneA").classList.contains("is-on") ? POSE_ALT[pose] : "";
-    $("sceneB").alt = $("sceneB").classList.contains("is-on") ? POSE_ALT[pose] : "";
-    document.querySelectorAll(".scene-img").forEach((im) => (im.alt = POSE_ALT[pose]));
     $("sceneNo").textContent = String(state.step + 1).padStart(2, "0");
     $("sceneName").textContent = s.name;
     $("stepCount").textContent = `第 ${state.step + 1} 步・共 ${list.length} 步`;
@@ -120,8 +123,10 @@
     $("stepDesc").textContent = s.desc(t);
     $("stepPoints").innerHTML = pointsOf(s).map((p) => `<li>${esc(p)}</li>`).join("");
     $("stepMistake").textContent = s.mistake;
+    const hadFocus = document.activeElement;
     $("prevBtn").disabled = state.step === 0;
     $("nextBtn").disabled = state.step === list.length - 1;
+    if ((hadFocus === $("prevBtn") && $("prevBtn").disabled) || (hadFocus === $("nextBtn") && $("nextBtn").disabled)) $("playBtn").focus();
     document.querySelectorAll("#steps button").forEach((b, k) => {
       b.toggleAttribute("aria-current", k === state.step);
       if (k === state.step) b.setAttribute("aria-current", "step");
@@ -130,11 +135,15 @@
     const cur = document.querySelector(`#steps button[data-i="${state.step}"]`);
     if (cur && cur.parentElement.parentElement.scrollWidth > cur.parentElement.parentElement.clientWidth) {
       const ol = cur.parentElement.parentElement;
-      ol.scrollTo({ left: cur.parentElement.offsetLeft - ol.clientWidth / 2 + 38, behavior: "smooth" });
+      ol.scrollTo({ left: cur.parentElement.offsetLeft - ol.clientWidth / 2 + 38, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
     }
     const showTimer = ["brew", "pour", "again"].includes(s.id);
     $("timer").hidden = !showTimer;
-    if (showTimer) resetTimer(s.id === "again" ? 2 : 1);
+    if (!showTimer) { clearInterval(tm.id); tm.id = 0; tm.kind = 0; }
+    else {
+      const kind = s.id === "again" ? 2 : 1;
+      if (tm.kind !== kind || tm.tea !== t.id) { resetTimer(kind); tm.kind = kind; tm.tea = t.id; }
+    }
     $("stage").setAttribute("aria-label", `${s.name}的手法特寫動畫`);
     stage.load(t, s.clip, !!autoplay, stepHand(s, t));
     const next = list[state.step + 1];
@@ -143,7 +152,7 @@
   }
 
   /* ---------- 計時器 ---------- */
-  let tm = { n: 1, total: 0, left: 0, id: 0 };
+  let tm = { n: 1, total: 0, left: 0, id: 0, end: 0, kind: 0, tea: "" };
   function infTime(n) {
     const t = state.tea;
     return t.steeps.first + t.steeps.add * (n - 1);
@@ -162,7 +171,7 @@
     $("timerNote").textContent = t.vessel === "glass" ? "玻璃杯：浸泡後即可品飲，剩三分一便續水" : `${t.name}：首泡 ${t.steeps.first} 秒，${t.steeps.unit}`;
   }
   function tick() {
-    tm.left -= 1;
+    tm.left = Math.max(0, Math.ceil((tm.end - performance.now()) / 1000));
     $("timerNum").textContent = Math.max(0, tm.left);
     $("timerArc").style.strokeDashoffset = (119.4 * (1 - tm.left / tm.total)).toFixed(1);
     if (tm.left <= 0) {
@@ -171,35 +180,22 @@
       $("timer").classList.add("done");
       $("timerGo").textContent = "下一泡";
       $("timerStatus").textContent = `第 ${tm.n} 泡時間到，請出湯`;
-      chime();
     }
-  }
-  function chime() {
-    try {
-      const ac = new (window.AudioContext || window.webkitAudioContext)();
-      [0, 0.18].forEach((d, i) => {
-        const o = ac.createOscillator(), g = ac.createGain();
-        o.type = "sine"; o.frequency.value = i ? 1046.5 : 784;
-        g.gain.setValueAtTime(0.0001, ac.currentTime + d);
-        g.gain.exponentialRampToValueAtTime(0.18, ac.currentTime + d + 0.02);
-        g.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + d + 1.2);
-        o.connect(g).connect(ac.destination); o.start(ac.currentTime + d); o.stop(ac.currentTime + d + 1.3);
-      });
-    } catch (e) { /* 部分瀏覽器不支援音效，計時仍然有效 */ }
   }
   $("infMinus").onclick = () => resetTimer(tm.n - 1);
   $("infPlus").onclick = () => resetTimer(tm.n + 1);
   $("timerGo").onclick = () => {
     if ($("timer").classList.contains("done")) return resetTimer(tm.n + 1);
-    if (tm.id) { clearInterval(tm.id); tm.id = 0; $("timerGo").textContent = "繼續"; return; }
-    tm.id = setInterval(tick, 1000);
+    if (tm.id) { tick(); clearInterval(tm.id); tm.id = 0; $("timerGo").textContent = "繼續"; return; }
+    tm.end = performance.now() + tm.left * 1000;
+    tm.id = setInterval(tick, 250);
     $("timerGo").textContent = "暫停";
   };
 
   /* ---------- 茶類選擇 ---------- */
   function renderPicker() {
     $("teaPicker").innerHTML = D.teas
-      .map((t) => `<button class="chip" type="button" role="radio" aria-checked="${t.id === state.tea.id}" data-tea="${t.id}"><span class="dot" style="background:${t.liquor}"></span>${esc(t.name)}</button>`)
+      .map((t) => `<button class="chip" type="button" role="radio" aria-checked="${t.id === state.tea.id}" tabindex="${t.id === state.tea.id ? 0 : -1}" data-tea="${t.id}"><span class="dot" style="background:${t.liquor}"></span>${esc(t.name)}</button>`)
       .join("");
   }
   function renderParams() {
@@ -218,7 +214,9 @@
   function setTea(id, keepStep) {
     const prevId = visibleSteps()[state.step] && visibleSteps()[state.step].id;
     state.tea = D.teas.find((t) => t.id === id) || state.tea;
-    renderPicker(); renderParams(); renderSteps(); renderTeaDetail();
+    const pickerFocus = $("teaPicker").contains(document.activeElement);
+    renderPicker();
+    if (pickerFocus) $("teaPicker").querySelector('[aria-checked="true"]').focus(); renderParams(); renderSteps(); renderTeaDetail();
     const list = visibleSteps();
     let idx = keepStep ? list.findIndex((s) => s.id === prevId) : 0;
     if (idx < 0) idx = 0;
@@ -258,7 +256,7 @@
   if (window.TeaAudio) {
     const paintAudio = (a) => {
       $("sfxBtn").setAttribute("aria-pressed", a.sfx); $("sfxBtn").setAttribute("aria-label", a.sfx ? "音效：開" : "音效：關");
-      $("musicBtn").setAttribute("aria-pressed", a.music); $("musicBtn").setAttribute("aria-label", a.music ? "背景音樂：開" : "背景音樂：關");
+      $("musicBtn").setAttribute("aria-pressed", a.music); $("musicBtn").setAttribute("aria-label", a.error ? a.error : a.music ? "背景音樂：開" : "背景音樂：關"); $("musicBtn").title = a.error || "";
       $("trackSel").hidden = !a.music; $("trackSel").value = a.track;
     };
     $("trackSel").innerHTML = TeaAudio.tracks.map((t) => `<option value="${t.id}">${t.name}</option>`).join("");
@@ -272,8 +270,8 @@
     const r = $("stage").getBoundingClientRect();
     if (r.top < 60 || r.bottom > innerHeight - 140) $("stage").closest(".closeup").scrollIntoView({ block: "center", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
   };
-  $("playBtn").onclick = () => { stage.toggle(); if (stage.playing) showCloseup(); };
-  $("replayBtn").onclick = () => stage.replay();
+  $("playBtn").onclick = () => { clearTimeout(autoTimer); stage.toggle(); if (stage.playing) showCloseup(); };
+  $("replayBtn").onclick = () => { clearTimeout(autoTimer); stage.replay(); };
   $("speedBtn").onclick = () => {
     state.speed = state.speed === 1 ? 0.5 : state.speed === 0.5 ? 1.5 : 1;
     stage.setSpeed(state.speed);
@@ -286,7 +284,7 @@
     if (!stage.playing) stage.replay();
   };
   document.addEventListener("keydown", (e) => {
-    if (e.target.closest("input, textarea, [role=radiogroup], [role=tablist]")) return;
+    if (e.defaultPrevented || e.target.closest("input, textarea, select, [contenteditable], [role=radiogroup], [role=tablist]")) return;
     const r = $("demo").getBoundingClientRect();
     if (r.bottom < 0 || r.top > innerHeight) return;
     if (e.key === "ArrowRight") goStep(state.step + 1, true);
@@ -355,11 +353,13 @@
     if (e.target.closest("#tdDemo")) {
       goStep(0, true);
       $("demo").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+      $("playBtn").focus({ preventScroll: true });
     }
   });
 
   /* ---------- 技巧 ---------- */
-  const stage2 = window.__teaStage2 = TeaStage.createStage($("stage2"), { onLabel: (tx) => setLabel($("cuLabel2"), tx), onFrame: (st, playing) => window.TeaAudio && TeaAudio.feed("skill", st, playing) });
+  const REDUCE = matchMedia("(prefers-reduced-motion: reduce)");
+  const stage2 = window.__teaStage2 = TeaStage.createStage($("stage2"), { onState: (playing) => { $("skillPlay").setAttribute("aria-label", playing ? "暫停技巧動畫" : "播放技巧動畫"); $("skillPlayIcon").setAttribute("d", playing ? "M7 5h3.5v14H7zM13.5 5H17v14h-3.5z" : "M8 5v14l11-7z"); }, onLabel: (tx) => setLabel($("cuLabel2"), tx), onFrame: (st, playing) => window.TeaAudio && TeaAudio.feed("skill", st, playing), onIdle: () => window.TeaAudio && TeaAudio.stop("skill") });
   const skillTea = (sk) => (sk.clip === "phoenix" ? D.teas[0] : D.teas.find((t) => t.id === "oolong"));
   let skillIdx = 0;
   function renderSkills() {
@@ -377,7 +377,7 @@
       <h4 class="mini-h">為甚麼</h4><p style="color:var(--ink-2);margin-bottom:12px">${esc(s.why)}</p>
       <div class="mistake"><b>常見錯誤</b><span>${esc(s.mistake)}</span></div>`;
     $("stage2").setAttribute("aria-label", `${s.name}特寫動畫`);
-    stage2.load(skillTea(s), s.clip, play, s.id === "grip" ? HANDS.grip : s.id === "knock" ? HANDS.knock : null);
+    stage2.load(skillTea(s), s.clip, play && !REDUCE.matches, s.id === "grip" ? HANDS.grip : s.id === "knock" ? HANDS.knock : null);
   }
   $("skillList").addEventListener("click", (e) => {
     const b = e.target.closest("[data-k]");
@@ -392,8 +392,9 @@
     e.preventDefault();
   });
   $("skillReplay").onclick = () => stage2.replay();
+  $("skillPlay").onclick = () => stage2.toggle();
   const io = "IntersectionObserver" in window ? new IntersectionObserver((en) => {
-    en.forEach((x) => { if (x.isIntersecting) { stage2.replay(); io.disconnect(); } });
+    en.forEach((x) => { if (x.isIntersecting) { if (!REDUCE.matches) stage2.replay(); io.disconnect(); } });
   }, { threshold: 0.4 }) : null;
 
   /* ---------- 水溫 ---------- */
@@ -438,8 +439,8 @@
     const q = D.quiz[qi];
     box.innerHTML = `<div class="q-meta"><span>第 ${qi + 1} 題・共 ${D.quiz.length} 題</span><span>答對 ${score} 題</span></div>
       <div class="q-bar"><span style="width:${(qi / D.quiz.length) * 100}%"></span></div>
-      <p class="q-text">${esc(q.q)}</p>
-      <div class="q-opts">${q.options.map((o, i) => `<button class="q-opt" type="button" data-o="${i}">${esc(o)}</button>`).join("")}</div>
+      <p class="q-text" id="qText" tabindex="-1">${esc(q.q)}</p>
+      <div class="q-opts" role="group" aria-labelledby="qText">${q.options.map((o, i) => `<button class="q-opt" type="button" data-o="${i}">${esc(o)}</button>`).join("")}</div>
       <div id="qAfter" aria-live="polite"></div>`;
   }
   $("quizBox").addEventListener("click", (e) => {
@@ -458,7 +459,7 @@
       $("qNext").focus();
       return;
     }
-    if (e.target.closest("#qNext")) { qi++; renderQuiz(); const f = $("quizBox").querySelector("button"); f && f.focus(); }
+    if (e.target.closest("#qNext")) { qi++; renderQuiz(); const f = $("qText") || $("quizBox").querySelector("button"); f && f.focus(); }
   });
 
   /* ---------- 內嵌高度 ---------- */

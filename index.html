@@ -16,7 +16,7 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%238d2f22'/%3E%3Cpath d='M18 30h28c-1 10-6 16-14 16s-13-6-14-16zM46 33c6 0 6 8-1 8M24 50h16' fill='none' stroke='%23fbeee0' stroke-width='3.5' stroke-linecap='round'/%3E%3C/svg%3E">
 <link rel="preload" href="assets/fonts/tea-serif.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" as="image" href="assets/img/scene/greet-960.webp" imagesrcset="assets/img/scene/greet-960.webp 960w, assets/img/scene/greet-1536.webp 1536w" imagesizes="(min-width: 1080px) 60vw, 100vw">
-<link rel="stylesheet" href="assets/css/app.css?v=20261019j">
+<link rel="stylesheet" href="assets/css/app.css?v=20261019k">
 </head>
 <body>
 <a class="skip" href="#demo">跳到示範</a>
@@ -32,6 +32,7 @@
   </div>
 </header>
 
+<noscript><p style="padding:24px;text-align:center">此教學需要啟用 JavaScript 才能顯示泡茶流程、茶類資料及測驗。請在瀏覽器啟用 JavaScript 後重新載入頁面。</p></noscript>
 <main>
   <section id="demo" class="demo" aria-labelledby="demo-title">
     <div class="wrap">
@@ -50,6 +51,7 @@
         <figure class="scene" id="scene">
           <img class="scene-img is-on" id="sceneA" alt="" width="1536" height="1024" src="assets/img/scene/greet-960.webp" srcset="assets/img/scene/greet-960.webp 960w, assets/img/scene/greet-1536.webp 1536w" sizes="(min-width: 1080px) 60vw, 100vw" fetchpriority="high">
           <img class="scene-img" id="sceneB" alt="" width="1536" height="1024" aria-hidden="true">
+          <p class="scene-note" id="sceneNote" role="status"></p>
           <figcaption class="scene-cap"><span class="scene-no" id="sceneNo">01</span><span id="sceneName">備具迎客</span></figcaption>
         </figure>
       <div class="controls" role="group" aria-label="播放控制">
@@ -85,7 +87,7 @@
                 </button>
               </div>
             </div>
-            <div class="stage-wrap"><svg class="stage" id="stage" viewBox="0 0 800 500" role="img" aria-label="泡茶手法特寫動畫"></svg><p class="cu-label" id="cuLabel" aria-live="polite"></p></div>
+            <div class="stage-wrap"><svg class="stage" id="stage" viewBox="0 0 800 500" role="img" aria-label="泡茶手法特寫動畫"></svg></div><p class="cu-label" id="cuLabel" aria-live="polite"></p>
             <div class="progress" aria-hidden="true"><span id="progressBar"></span></div>
           </div>
 
@@ -125,7 +127,7 @@
     <div class="wrap">
       <p class="eyebrow">茶類百科</p>
       <h2 id="teas-title" class="sec-title">八種茶，八種性情</h2>
-      <p class="sec-lede">六大基本茶類大致按發酵程度由輕到重排列；普洱生茶以曬青毛茶自然陳化，茉莉花茶屬再加工茶，另列於後。點選一款茶，看它的泡法、茶性、適合人群與歷史。</p>
+      <p class="sec-lede">六大茶類按加工工藝及品質特徵區分；紅茶、烏龍俗稱的發酵主要指氧化，熟普另涉渥堆；以下八款是教學選例。點選一款茶，看它的泡法、茶性、適合人群與歷史。</p>
       <div class="tea-grid" id="teaGrid"></div>
       <article class="tea-detail" id="teaDetail" aria-live="polite"></article>
     </div>
@@ -140,8 +142,12 @@
         <div class="skill-list" role="tablist" aria-label="技巧" id="skillList"></div>
         <div class="skill-view">
           <div class="closeup closeup-sm">
-            <div class="stage-wrap"><svg class="stage" id="stage2" viewBox="0 0 800 500" role="img" aria-label="技巧特寫動畫"></svg><p class="cu-label" id="cuLabel2"></p></div>
-            <button class="icon-btn float" id="skillReplay" type="button" aria-label="重播技巧動畫"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.4-5.7M4 4v4.5h4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+            <div class="stage-wrap"><svg class="stage" id="stage2" viewBox="0 0 800 500" role="img" aria-label="技巧特寫動畫"></svg></div>
+            <p class="cu-label" id="cuLabel2"></p>
+            <div class="skill-ctl">
+              <button class="icon-btn" id="skillPlay" type="button" aria-label="暫停技巧動畫"><svg viewBox="0 0 24 24" aria-hidden="true"><path id="skillPlayIcon" d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z" fill="currentColor"/></svg></button>
+              <button class="icon-btn" id="skillReplay" type="button" aria-label="重播技巧動畫"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.4-5.7M4 4v4.5h4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+            </div>
           </div>
           <div class="skill-body" id="skillBody" role="tabpanel" aria-live="polite"></div>
         </div>
@@ -153,7 +159,7 @@
     <div class="wrap">
       <p class="eyebrow">水溫與用水</p>
       <h2 id="water-title" class="sec-title">水為茶之母</h2>
-      <p class="sec-lede">一般原則：茶越嫩、發酵越輕，水溫越低；越粗老、發酵或焙火越重，水溫越高。</p>
+      <p class="sec-lede">本示範的細嫩綠茶先以 80–85°C 控制苦澀；其他茶按茶款、器皿及時間調整。</p>
       <div class="water">
         <div class="temp-chart" id="tempChart" role="img" aria-label="各茶類建議水溫"></div>
         <div class="water-notes" id="waterNotes"></div>
@@ -202,10 +208,10 @@
   </div>
 </footer>
 
-<script src="assets/js/data.js?v=20261019j"></script>
-<script src="assets/js/kit.js?v=20261019j"></script>
-<script src="assets/js/audio.js?v=20261019j"></script>
-<script src="assets/js/stage.js?v=20261019j"></script>
-<script src="assets/js/app.js?v=20261019j"></script>
+<script src="assets/js/data.js?v=20261019k"></script>
+<script src="assets/js/kit.js?v=20261019k"></script>
+<script src="assets/js/audio.js?v=20261019k"></script>
+<script src="assets/js/stage.js?v=20261019k"></script>
+<script src="assets/js/app.js?v=20261019k"></script>
 </body>
 </html>

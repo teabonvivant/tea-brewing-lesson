@@ -84,6 +84,8 @@
         this.tan[n] = tangents(tr);
       }
       this.labels.sort((a, b) => a[0] - b[0]);
+      const last = this.labels[this.labels.length - 1];
+      if (last) this.dur = Math.max(this.dur, last[0] + Math.max(1.6, last[1].length * 0.13) - extra);
       this.dur += extra;
       return this;
     }
@@ -279,7 +281,7 @@
           c.key("tr", t, 0).key("tr", t + 0.8, 1).hold("tr", t + 0.8, t1 - 0.2, 1).key("tr", t1 + 0.8, 0);
           [0, 1, 2].forEach((i) => {
             const u = t + 0.9 + i * step, a = aimCupToWash(i, 105, 12);
-            c.label(u + 0.27, i === 0 ? "茶夾夾住杯沿，提起品茗杯" : "再夾第 " + (i + 1) + " 隻杯").label(u + 0.82, "轉動杯身，令杯壁均勻受熱").label(u + 2.04, "傾杯，把水倒入水洗");
+            c.label(u, i === 0 ? "茶夾夾住杯沿，提起品茗杯" : "再夾第 " + (i + 1) + " 隻杯").label(u + 0.95, "轉動杯身，令杯壁均勻受熱").label(u + 2.04, "傾杯，把水倒入水洗");
             c.hold("tgi", u - 0.2, u + 2.72, i)
               .key("tg", u, 0).key("tg", u + 0.34, 1).key("tg", u + 2.99, 1).key("tg", u + 3.20, 0)
               .key("u" + i, u + 0.34, 0).key("y" + i, u + 0.34, 0).key("r" + i, u + 0.34, 0)
@@ -501,7 +503,7 @@
   const TEA_IDS = ["green", "white", "yellow", "oolong", "black", "shengpu", "shoupu", "jasmine"];
 
   function imageList(style) {
-    return [IMG + style + "/bg.webp"].concat(PARTS.concat("ghand", "phand", "chand").map((n) => `${IMG}${style}/${n}.webp`), WET.map((n) => `${IMG}${style}/${n}.webp`), TEA_IDS.map((n) => `${IMG}${style}/dry-${n}.webp`));
+    return [IMG + style + "/bg.webp"].concat(PARTS.map((n) => `${IMG}${style}/${n}.webp`), WET.map((n) => `${IMG}${style}/${n}.webp`), TEA_IDS.map((n) => `${IMG}${style}/dry-${n}.webp`));
   }
   const loaded = {};
   function preload(style) {
@@ -509,6 +511,7 @@
     loaded[style] = Promise.all(imageList(style).map((u) => new Promise((res) => {
       const i = new Image();
       i.onload = i.onerror = () => res();
+      setTimeout(res, 8000);
       i.src = u;
     })));
     return loaded[style];
@@ -798,7 +801,20 @@
     R.labelText = el("text", { x: 0, y: 9, "text-anchor": "middle", "font-size": 25, fill: "#fbf1dc", class: "tb-svgtext" }, R.label);
     R.cam0 = { x: 400, y: 250, z: 1 };
     R.camSet = false;
+    uniqIds(svg);
     return R;
+  }
+
+  let SVG_SEQ = 0;
+  function uniqIds(svg) {
+    const pre = "tb" + (++SVG_SEQ) + "-";
+    svg.querySelectorAll('[id^="tb-"]').forEach((n) => { n.id = pre + n.id.slice(3); });
+    svg.querySelectorAll("*").forEach((n) => {
+      ["fill", "stroke", "clip-path", "style"].forEach((a) => {
+        const v = n.getAttribute(a);
+        if (v && v.includes("url(#tb-")) n.setAttribute(a, v.replace(/url\(#tb-/g, "url(#" + pre));
+      });
+    });
   }
 
   /* 水流：兩端略收窄的帶狀多邊形＋高光線 */
@@ -1212,6 +1228,7 @@
       const live = playing && visible;
       if (clip && !live && !dirty) {
         /* 暫停：畫面凍結，只更新水氣粒子 */
+        opts.onIdle && opts.onIdle();
         if ((idleTick++ % 4) === 0) { fxUpdate(R, frozenNow, idleDt, reduce ? [] : R.lastSteam || []); idleDt = 0; }
       } else if (clip) {
         const s = clip.sample(t);
@@ -1240,11 +1257,15 @@
         kick();
       });
     }
+    let vio = null;
     if ("IntersectionObserver" in window) {
-      new IntersectionObserver((en) => { visible = en.some((x) => x.isIntersecting); if (visible) kick(); }).observe(svg);
+      vio = new IntersectionObserver((en) => { visible = en.some((x) => x.isIntersecting); if (visible) kick(); });
+      vio.observe(svg);
     }
-    document.addEventListener("visibilitychange", () => { if (!document.hidden) kick(); });
-    styleListeners.push((st) => { if (st !== style) { style = st; boot(); } });
+    const onVis = () => { if (!document.hidden) kick(); };
+    document.addEventListener("visibilitychange", onVis);
+    const onStyle = (st) => { if (st !== style) { style = st; boot(); } };
+    styleListeners.push(onStyle);
     const booted = boot();
     return {
       load(newTea, id, autoplay, handInfo) {
@@ -1259,7 +1280,7 @@
         if (ready) kick();
       },
       play() { if (!clip) return; if (t >= clip.dur) t = 0; playing = true; setRun(true); last = performance.now(); opts.onState && opts.onState(true); kick(); },
-      pause() { playing = false; setRun(false); opts.onState && opts.onState(false); },
+      pause() { playing = false; setRun(false); opts.onState && opts.onState(false); opts.onIdle && opts.onIdle(); },
       toggle() { playing ? this.pause() : this.play(); },
       replay() { t = 0; this.play(); },
       seek(frac) { if (clip) { t = Math.max(0, Math.min(1, frac)) * clip.dur; kick(); } },
@@ -1268,7 +1289,13 @@
       get duration() { return clip ? clip.dur : 0; },
       get ready() { return ready; },
       get state() { return clip ? clip.sample(t) : null; },
-      destroy() { cancelAnimationFrame(raf); }
+      destroy() {
+        cancelAnimationFrame(raf); playing = false; opts.onIdle && opts.onIdle();
+        if (vio) vio.disconnect();
+        document.removeEventListener("visibilitychange", onVis);
+        const k = styleListeners.indexOf(onStyle); if (k >= 0) styleListeners.splice(k, 1);
+        [hudTemp, hudTimer, handBox, note].forEach((n) => n.remove());
+      }
     };
   }
 

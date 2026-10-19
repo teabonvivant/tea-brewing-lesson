@@ -10,10 +10,10 @@
   if (!TRACKS.some((t) => t.id === prefs.track)) prefs.track = TRACKS[0].id;
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(prefs)); } catch (e) {} };
   const listeners = [];
-  const emitChange = () => listeners.forEach((f) => f({ sfx: prefs.sfx, music: prefs.music, track: prefs.track }));
+  const emitChange = () => listeners.forEach((f) => f({ sfx: prefs.sfx, music: prefs.music, track: prefs.track, error: audioError }));
 
   let ctx = null, master = null, sfxBus = null, noise = null, pourBand = null, pourGain = null, pourSrc = null;
-  let musicEl = null, fadeTimer = 0;
+  let musicEl = null, fadeTimer = 0, audioError = "";
   const src = {};            // 每個畫面各自的前一幀狀態
   const pourWant = {};       // 每個畫面想要的水聲強度與音高
   const cool = {};           // 各事件冷卻
@@ -41,9 +41,9 @@
     pourBand = ctx.createBiquadFilter(); pourBand.type = "lowpass"; pourBand.frequency.value = 1800; pourBand.Q.value = 0.3;
     pourGain = ctx.createGain(); pourGain.gain.value = 0;
     pourBand.connect(pourGain); pourGain.connect(sfxBus);
-    fetch("assets/audio/water-pour.mp3").then((r) => r.arrayBuffer()).then((ab) => ctx.decodeAudioData(ab)).then((buf) => {
+    fetch("assets/audio/water-pour.mp3").then((r) => { if (!r.ok) throw new Error(r.status); return r.arrayBuffer(); }).then((ab) => ctx.decodeAudioData(ab)).then((buf) => {
       pourSrc = ctx.createBufferSource(); pourSrc.buffer = buf; pourSrc.loop = true; pourSrc.connect(pourBand); pourSrc.start(0, 1);
-    }).catch(() => {});
+    }).catch(() => { audioError = "水聲載入失敗"; emitChange(); });
     return ctx;
   }
 
@@ -88,10 +88,12 @@
     playingNow[id] = playing;
     src[id] = { show: s.show, lid: s.lid, kr: s.kr, sip: s.sip, timer: s.timer, fall: s.fall, drop: s.drop, gy: s.gy, wLevel: s.wLevel };
     if (!playing || !p) { pourWant[id] = null; return; }
-    const stream = Math.max(s.sK, s.sG, s.sP);
+    const waste = Math.max(s.sW || 0, s.sC || 0);
+    const stream = Math.max(s.sK, s.sG, s.sP, waste);
     if (stream > 0.05) {
       let fill = s.sK >= s.sG && s.sK >= s.sP ? (s.mode === "glass" ? s.wLevel : s.gLevel) : s.sG >= s.sP ? s.pLevel : (s["c" + Math.round(s.pTarget || 0)] || 0);
-      pourWant[id] = { v: Math.min(1, stream), fill: Math.max(0, Math.min(1, fill)), thin: s.sP > s.sK && s.sP > s.sG ? 0.75 : 1 };
+      if (waste >= stream) fill = 0.2;
+      pourWant[id] = { v: Math.min(1, stream), fill: Math.max(0, Math.min(1, fill)), thin: waste >= stream || (s.sP > s.sK && s.sP > s.sG) ? 0.75 : 1 };
     } else pourWant[id] = null;
     // 逐件器具出場
     const k0 = p.show * 6, k1 = s.show * 6;
@@ -130,10 +132,13 @@
   function startMusic() {
     if (!musicEl) {
       musicEl = new Audio(trackSrc(prefs.track)); musicEl.preload = "auto"; musicEl.volume = 0;
+      musicEl.addEventListener("error", () => { audioError = "背景音樂載入失敗"; emitChange(); });
+      musicEl.addEventListener("playing", () => { if (audioError === "背景音樂載入失敗") { audioError = ""; emitChange(); } });
       musicEl.addEventListener("ended", () => { const i = TRACKS.findIndex((t) => t.id === prefs.track); setTrack(TRACKS[(i + 1) % TRACKS.length].id, true); });
     }
+    if (!musicEl.src.endsWith(trackSrc(prefs.track))) musicEl.src = trackSrc(prefs.track);
     const p = musicEl.play();
-    if (p && p.catch) p.catch(() => { /* 瀏覽器要求先有點擊：下一次點擊時再試 */ armUnlock(); });
+    if (p && p.catch) p.catch((e) => { if (e && e.name === "NotAllowedError") armUnlock(); });
     fade(0.32, 1800);
   }
   function stopMusic() { if (!musicEl) return; fade(0, 700, () => musicEl.pause()); }
@@ -157,6 +162,7 @@
 
   window.TeaAudio = {
     feed,
+    stop(id) { pourWant[id] = null; },
     get sfx() { return prefs.sfx; },
     get music() { return prefs.music; },
     setSfx(on) {
@@ -169,7 +175,7 @@
     tracks: TRACKS,
     get track() { return prefs.track; },
     setTrack,
-    onChange(f) { listeners.push(f); f({ sfx: prefs.sfx, music: prefs.music, track: prefs.track }); },
+    onChange(f) { listeners.push(f); f({ sfx: prefs.sfx, music: prefs.music, track: prefs.track, error: audioError }); },
     unlock: armUnlock,
     _dbg: () => ({ state: ctx && ctx.state, pour: pourGain && pourGain.gain.value, band: pourBand && pourBand.frequency.value, music: musicEl && { paused: musicEl.paused, vol: musicEl.volume, t: musicEl.currentTime, src: musicEl.src } })
   };
