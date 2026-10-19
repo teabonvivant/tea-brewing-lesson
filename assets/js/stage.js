@@ -806,6 +806,8 @@
     const vis = on > 0.02;
     S.body.style.opacity = S.hi.style.opacity = vis ? Math.min(1, on) : 0;
     if (!vis) return;
+    const grow = Math.min(1, on * 2.2);
+    b = { x: a.x + (b.x - a.x) * grow, y: a.y + (b.y - a.y) * (grow * grow * 0.4 + grow * 0.6) };
     const c = { x: a.x + (b.x - a.x) * 0.62, y: a.y - 3 };
     const N = 14, left = [], right = [], mid = [];
     for (let i = 0; i <= N; i++) {
@@ -813,7 +815,7 @@
       const x = u * u * a.x + 2 * u * t * c.x + t * t * b.x, y = u * u * a.y + 2 * u * t * c.y + t * t * b.y;
       const tx = 2 * u * (c.x - a.x) + 2 * t * (b.x - c.x), ty = 2 * u * (c.y - a.y) + 2 * t * (b.y - c.y);
       const m = Math.hypot(tx, ty) || 1, nx = -ty / m, ny = tx / m;
-      const w = w0 * 0.8 * (1 - 0.5 * t) * (1 + 0.06 * Math.sin(now / 90 - t * 9)) * Math.min(1, on * 1.4);
+      const w = w0 * 0.8 * (1 - 0.62 * t * t - 0.12 * t) * (1 + 0.06 * Math.sin(now / 90 - t * 9)) * Math.min(1, on * 1.4);
       left.push([x + nx * w / 2, y + ny * w / 2]); right.push([x - nx * w / 2, y - ny * w / 2]); mid.push([x + nx * w * 0.14, y + ny * w * 0.14]);
     }
     const f = (p) => p[0].toFixed(1) + " " + p[1].toFixed(1);
