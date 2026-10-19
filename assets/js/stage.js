@@ -725,12 +725,14 @@
 
     // 品茗杯
     const cr = q.cRim;
+    R.cupMats = [];
     HOME.cups.forEach((c) => {
       const sg = el("g", { transform: `translate(${c.x},${c.y})` }, R.layer);
       el("ellipse", { cx: 0, cy: 3, rx: 37, ry: 11, fill: "#000", opacity: 0.28 }, sg);
       el("ellipse", { cx: 0, cy: 0, rx: 35, ry: 10.5, fill: "#34302d" }, sg);
       el("ellipse", { cx: 0, cy: -0.8, rx: 26, ry: 7, fill: "#45403b" }, sg);
       el("ellipse", { cx: 0, cy: -1.4, rx: 35, ry: 10.5, fill: "none", stroke: "#8a8178", "stroke-opacity": 0.55, "stroke-width": 0.8 }, sg);
+      R.cupMats.push(sg);
     });
     R.cups = HOME.cups.map(() => {
       const gr = el("g", {}, R.layer);
@@ -919,6 +921,7 @@
     R.pitcher.style.display = glass ? "none" : "";
     R.cups.forEach((c) => (c.g.style.display = glass ? "none" : ""));
     R.glass.style.display = glass ? "" : "none";
+    R.cupMats.forEach((m) => (m.style.display = glass ? "none" : ""));
     appear(R.towel, 4);
     appear(R.holder, 4);
     appear(R.wash, 3);
