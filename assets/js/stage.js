@@ -4,11 +4,11 @@
   /* 器具擺位（舞台座標 800×500，原點為各器具底部中心）；L 為按單品圖錨點計算出的相對位置，見 applyKit()。 */
   /* 茶席擺位（對齊人物場景）：茶盤居中；蓋碗、公道杯分列茶盤中線兩側；三杯在茶盤前方的桌面（不在盤上）；水洗在右上；茶巾在右前 */
   const HOME = {
-    kettle: { x: 716, y: 318 },
-        gaiwan: { x: 326, y: 262 },
+    kettle: { x: 62, y: 212 },
+        gaiwan: { x: 338, y: 262 },
     glass: { x: 390, y: 262 },
     towel: { x: 70, y: 272 },
-    pitcher: { x: 452, y: 262 },
+    pitcher: { x: 442, y: 262 },
     cups: [{ x: 318, y: 376 }, { x: 394, y: 376 }, { x: 470, y: 376 }],
     chahe: { x: 640, y: 446 },
     holder: { x: 768, y: 424 },
@@ -107,7 +107,7 @@
   /* 計算物件要移到哪裏，令壺嘴／出水點對準目標 */
   function aimKettle(target, r, h) {
     const tip = rot(L.kettleTip, L.kettlePivot, r);
-    return { x: target.x + 4 - (HOME.kettle.x + tip.x), y: target.y - h - (HOME.kettle.y + tip.y) };
+    return { x: target.x - 4 - (HOME.kettle.x + tip.x), y: target.y - h - (HOME.kettle.y + tip.y) };
   }
   function aimPitcher(target, r, h) {
     const tip = rot(L.pitcherTip, L.pitcherTip, r);
@@ -131,7 +131,7 @@
   }
 
   function kettlePour(c, t0, target, o) {
-    const r = -(o.r || 38), h = o.h || 34, dur = o.dur || 2;
+    const r = (o.r || 38), h = o.h || 34, dur = o.dur || 2;
     const a = aimKettle(target, r, h), a0 = o.h0 !== undefined ? aimKettle(target, r, o.h0) : a;
     c.key("kx", t0, 0).key("ky", t0, 0).key("kr", t0, 0)
       .key("kx", t0 + 0.8, a.x).key("ky", t0 + 0.8, a0.y).key("kr", t0 + 0.8, r);
@@ -1006,10 +1006,10 @@
     });
 
     // 水流
-    const kDir = { x: Math.cos(rad(s.kr - 60)), y: Math.sin(rad(s.kr - 60)) };
+    const kDir = { x: Math.cos(rad(s.kr - 120)), y: Math.sin(rad(s.kr - 120)) };
     const kTarget = glass
-      ? { x: tip.x - 4, y: HOME.glass.y + s.wy + L.glassFloor - s.wLevel * L.glassH }
-      : { x: tip.x - 4, y: HOME.gaiwan.y + s.gy + gl.cy };
+      ? { x: tip.x + 4, y: HOME.glass.y + s.wy + L.glassFloor - s.wLevel * L.glassH }
+      : { x: tip.x + 4, y: HOME.gaiwan.y + s.gy + gl.cy };
     const waterCol = "#e9f6fb";
     ribbon(R.sK, s.sK, tip, kTarget, kDir, 4.4, waterCol, now, 0.8);
     const lipW = { x: HOME.gaiwan.x + s.gx + lip.x, y: HOME.gaiwan.y + s.gy + lip.y };
@@ -1086,7 +1086,7 @@
     let f = { x: 400, y: 250, z: 1 };
     const mid = (a, b, k = 0.5) => ({ x: lerp(a.x, b.x, k), y: lerp(a.y, b.y, k) });
     if (s.tg > 0.3 || s.sC > 0.05) { const m = mid(R.tongsTip || HOME.holder, washMouth(), 0.5); f = { x: m.x, y: m.y - 10, z: 1.5 }; }
-    else if (s.sK > 0.05 || Math.abs(s.kr) > 8) { const m = mid(P.tip, P.kTarget, 0.35); f = { x: m.x + 18, y: m.y - 24, z: 1.62 }; }
+    else if (s.sK > 0.05 || Math.abs(s.kr) > 8) { const m = mid(P.tip, P.kTarget, 0.35); f = { x: m.x - 18, y: m.y - 24, z: 1.62 }; }
     else if (s.sG > 0.05 || Math.abs(s.gr) > 10) { const m = mid(P.lipW, P.gTo, 0.5); f = { x: m.x, y: m.y - 8, z: 1.72 }; }
     else if (s.sP > 0.05 || s.pr < -10) { const m = mid(P.pTipW, P.cupTo, 0.5); f = { x: m.x - 10, y: m.y - 6, z: 1.8 }; }
     else if (s.lid > 0.02 && s.lid < 0.98 || s.lidX !== 0) f = { x: HOME.gaiwan.x + R.q.bowlRim.cx, y: HOME.gaiwan.y + R.q.bowlRim.cy - 6, z: 1.9 };
