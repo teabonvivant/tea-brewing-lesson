@@ -48,8 +48,8 @@ window.TEA_DATA = (function () {
       ml: 150,
       ratio: "約 1：30",
       rinse: { secs: 5, note: "示範流程保留潤茶步驟；新白茶可省略潤茶，老白茶可視乎茶葉決定。" },
-      steeps: { first: 15, add: 5, unit: "之後每泡加 5–10 秒" },
-      infusions: "5–8 泡",
+      steeps: { first: 15, steady: 20, n: 10, stretch: 2, unit: "" },
+      infusions: "約 10 泡",
       nature: "傳統分類：新茶屬涼性，陳放後漸趨溫和",
       taste: "毫香清甜，滋味柔和；陳放後轉出棗香、藥香。",
       benefits: [
@@ -109,8 +109,8 @@ window.TEA_DATA = (function () {
       ml: 110,
       ratio: "約 1：15–1：20",
       rinse: { secs: 5, note: "球形、半球形的烏龍茶可快速溫潤泡，令茶葉舒展。" },
-      steeps: { first: 10, add: 5, unit: "之後每泡加 5–10 秒" },
-      infusions: "7 泡以上",
+      steeps: { first: 10, steady: 12, n: 8, stretch: 1, unit: "" },
+      infusions: "約 8 泡",
       nature: "傳統分類：性平（清香型偏涼，焙火型偏溫）",
       taste: "花果香高揚，回甘明顯，講究「喉韻」「岩韻」「音韻」。",
       benefits: [
@@ -139,8 +139,8 @@ window.TEA_DATA = (function () {
       ml: 150,
       ratio: "約 1：30",
       rinse: null,
-      steeps: { first: 10, add: 5, unit: "之後每泡加 5–10 秒；嫩芽型（如金駿眉）水溫宜低" },
-      infusions: "5–8 泡",
+      steeps: { first: 10, steady: 12, n: 8, stretch: 1, unit: "" },
+      infusions: "約 8 泡",
       nature: "傳統分類：性溫",
       taste: "甜醇溫潤，帶蜜香、花果香或松煙香，湯色紅艷明亮。",
       benefits: [
@@ -162,6 +162,7 @@ window.TEA_DATA = (function () {
       liquor: "#eebd48",
       liquorDeep: "#d99a26",
       leaf: "#5f6a3c",
+      cake: true,
       vessel: "gaiwan",
       vesselName: "白瓷蓋碗（便於觀察湯色、控制出湯）",
       temp: [95, 100],
@@ -169,8 +170,8 @@ window.TEA_DATA = (function () {
       ml: 120,
       ratio: "約 1：15–1：20",
       rinse: { secs: 5, note: "緊壓茶餅撬開後先潤茶一次，令茶葉舒展；新茶出湯要快。" },
-      steeps: { first: 8, add: 5, unit: "首泡約 8 秒，之後每泡增加約 5 秒（第 2 泡約 13 秒），可按茶湯濃淡調整" },
-      infusions: "10 泡以上",
+      steeps: { first: 8, steady: 10, n: 14, stretch: 2, unit: "" },
+      infusions: "約 14 泡",
       nature: "傳統分類：新茶性偏涼，陳化後漸轉溫和",
       taste: "苦後回甘、生津明顯，山野氣韻足；隨陳化轉出蜜香、木香、陳香。",
       benefits: [
@@ -192,6 +193,7 @@ window.TEA_DATA = (function () {
       liquor: "#9c3416",
       liquorDeep: "#6a210e",
       leaf: "#2d1c12",
+      cake: true,
       vessel: "gaiwan",
       vesselName: "紫砂壺、陶壺或大容量蓋碗",
       temp: [100, 100],
@@ -199,8 +201,8 @@ window.TEA_DATA = (function () {
       ml: 130,
       ratio: "約 1：20",
       rinse: { secs: 10, note: "熟茶建議洗茶一至兩次，可去除浮塵並喚醒茶葉。" },
-      steeps: { first: 15, add: 10, unit: "之後每泡加 10–20 秒；後段可悶泡或煮飲" },
-      infusions: "10 泡以上",
+      steeps: { first: 15, steady: 18, n: 10, stretch: 2, unit: "" },
+      infusions: "約 10 泡",
       nature: "傳統分類：性溫",
       taste: "醇厚順滑，帶陳香、棗香、木香，湯色紅濃明亮。",
       benefits: [
@@ -229,7 +231,7 @@ window.TEA_DATA = (function () {
       ml: 150,
       ratio: "約 1：50",
       rinse: null,
-      steeps: { first: 15, add: 10, unit: "之後每泡加 10 秒" },
+      steeps: { first: 15, steady: 20, n: 4, stretch: 1, unit: "" },
       infusions: "3–4 泡",
       nature: "傳統分類：性平偏涼（視乎茶坯）",
       taste: "花香鮮靈，茶味清爽，湯色黃綠明亮。",
@@ -258,9 +260,16 @@ window.TEA_DATA = (function () {
     },
     {
       id: "view", name: "賞茶", pose: "present", clip: "view",
-      desc: (t) => `用茶則從茶罐取茶放入茶荷，雙手捧給客人欣賞乾茶的外形、色澤及香氣。本次取茶約 ${t.grams} 克。`,
-      points: (t) => ["取茶用茶則，不用手直接抓茶", "茶荷開口朝向客人，方便觀賞", `今次的茶：${t.sample}，屬${t.family}`],
-      mistake: "把茶荷舉得太高或太近客人面前，令人感到壓迫。"
+      desc: (t) => `${t.cake ? "雙手捧起茶餅，請客人欣賞餅面的外形、色澤及壓製紋理，再聞餅香。" : "用茶則從茶罐取茶放入茶荷，雙手捧給客人欣賞乾茶的外形、色澤及香氣。本次取茶約 " + t.grams + " 克。"}`,
+      points: (t) => [t.cake ? "雙手托住茶餅底部，手指不要壓在餅面" : "取茶用茶則，不用手直接抓茶", t.cake ? "先看餅面外形、條索與芽毫，再湊近聞餅香" : "茶荷開口朝向客人，方便觀賞", `今次的茶：${t.sample}，屬${t.family}`],
+      mistake: "把茶荷（或茶餅）舉得太高或太近客人面前，令人感到壓迫。"
+    },
+    {
+      id: "pry", name: "撬茶", pose: "pry", clip: "pry",
+      skipIf: (t) => !t.cake,
+      desc: (t) => `${t.name}是緊壓茶餅，要用茶刀撬取。茶刀從茶餅邊緣側面插入，順著茶葉的紋理輕輕往上撬，撬下約 ${t.grams} 克的茶塊放入茶荷。`,
+      points: ["茶刀沿茶餅邊緣側面插入，順著茶葉層次撬，不要垂直用力硬戳", "撬下的茶塊盡量保持塊狀，不要弄碎成茶末", "剩下的茶餅重新包好，防潮防異味"],
+      mistake: "用力硬掰或茶刀向身體方向撬，既容易弄碎茶葉也容易受傷。"
     },
     {
       id: "warm", name: "溫杯燙盞", pose: "kettle", clip: "warm",
@@ -304,7 +313,7 @@ window.TEA_DATA = (function () {
     {
       id: "pour", name: "出湯", pose: "decant", clip: "pour",
       skipIf: (t) => t.vessel === "glass",
-      desc: (t) => `時間到便把蓋碗中的茶湯全部倒入公道杯，最後幾滴也要瀝乾。${t.steeps.unit}。`,
+      desc: (t) => `時間到便把蓋碗中的茶湯全部倒入公道杯，最後幾滴也要瀝乾。${steepText(t)}。`,
       points: ["三指法：拇指與中指扣住碗沿，食指輕按蓋鈕", "碗蓋留一道縫隙出湯，茶葉留在碗內", "瀝乾茶湯，下一泡才不會苦澀"],
       mistake: "手指碰到碗身被燙，或蓋縫太大令茶葉一起倒出。"
     },
@@ -331,11 +340,27 @@ window.TEA_DATA = (function () {
       id: "again", name: "續泡收具", pose: "greet", clip: "again",
       desc: (t) => t.vessel === "glass"
         ? `杯中茶湯剩三分一時便續水，${t.name}一般可續 ${t.infusions}。品畢清洗器具，茶席回復整潔。`
-        : `第二泡起逐步延長浸泡時間（${t.steeps.unit.replace(/^之後/, "")}），${t.name}一般可泡 ${t.infusions}。品畢清洗器具，茶席回復整潔。`,
-      points: ["每泡時間逐步延長，濃淡才會前後一致", "茶味轉淡即可結束，不要勉強", "收具同樣有次序，善始善終"],
-      mistake: "後段泡數仍用首泡時間，茶湯一泡比一泡淡。"
+        : `第二泡起浸泡時間（${steepText(t)}），${t.name}一般可泡 ${t.infusions}。品畢清洗器具，茶席回復整潔。`,
+      points: ["中段各泡時間相近，後段每泡加一至兩秒，濃淡才會前後一致", "茶味轉淡即可結束，不要勉強", "收具同樣有次序，善始善終"],
+      mistake: "後段泡數仍用中段時間，茶湯一泡比一泡淡。"
     }
   ];
+
+  /* 泡數時間：首泡略短，第二泡起大致相同；最後三泡（泡數少的茶只最後一泡）每泡加 stretch 秒，口感由濃轉淡時補回。 */
+  function infTime(t, n) {
+    const p = t.steeps;
+    if (p.steady == null) return p.first + p.add * (n - 1);
+    if (n <= 1) return p.first;
+    const tail = p.n >= 8 ? 3 : 1;
+    const over = n - (p.n - tail);
+    return p.steady + (over > 0 ? over * p.stretch : 0);
+  }
+  function steepText(t) {
+    const p = t.steeps;
+    if (p.steady == null) return p.unit;
+    const tail = p.n >= 8 ? 3 : 1;
+    return `首泡約 ${p.first} 秒，第 2 泡起各泡約 ${p.steady} 秒，到最後${tail === 3 ? "三泡" : "一泡"}（約第 ${p.n - tail + 1} 泡起）每泡加 ${p.stretch} 秒`;
+  }
 
   function tempText(t) {
     return t.temp[0] === t.temp[1] ? `${t.temp[0]}°C` : `${t.temp[0]}–${t.temp[1]}°C`;
@@ -440,5 +465,5 @@ window.TEA_DATA = (function () {
     { q: "「關公巡城」之後，把最後幾滴濃湯逐杯點入，稱為？", options: ["韓信點兵", "鳳凰三點頭", "懸壺高沖"], answer: 0, why: "最後的茶湯最濃，逐杯點滴分配，各杯才濃淡一致。" }
   ];
 
-  return { teas, steps, techniques, tools, water, quiz, tempText };
+  return { teas, steps, techniques, tools, water, quiz, tempText, infTime, steepText };
 })();

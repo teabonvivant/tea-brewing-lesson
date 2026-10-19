@@ -121,6 +121,7 @@
       px: 0, py: 0, pr: 0, pLevel: 0, pTint: 1,
       u0: 0, u1: 0, u2: 0, tg: 0, tgi: 0, sC: 0, hp: 0, hpw: 0, c0: 0, c1: 0, c2: 0, cTint: 1, c1x: 0, c1y: 0, c1s: 1, c1r: 0, r0: 0, r1: 0, r2: 0, y0: 0, y1: 0, y2: 0, lidGap: 0, sW: 0,
       hx: 0, hy: 0, hr: 0, hs: 1, hLeaves: 0, fall: 0,
+      cakeOn: 0, cakeX: 0, cakeY: 0, cakeS: 1, cakeR: 0, knX: 0, knY: 0, knR: 0, chOn: 0, chX: 0, chY: 0,
       tr: 0, gd: 1, sK: 0, sKTea: 0, sG: 0, sP: 0, sGTarget: "pitcher", pTarget: 0,
       cw: 0, cx: 400, cy: 250, cz: 1,
       drop: 0, dropTarget: 0, timer: 0, timerText: "", steamCup: 0, sip: 0, temp: 1
@@ -232,7 +233,7 @@
     const b = baseState(tea, mode);
     const temp = tea.temp[0] === tea.temp[1] ? `${tea.temp[0]}°C` : `${tea.temp[0]}–${tea.temp[1]}°C`;
     const preset = {
-      prepare: { lid: 1 }, warm: {}, view: { lid: 1 }, add: { hLeaves: 1 }, smell: glass ? { wLeaves: 1, wLevel: 0.3, wTint: 0.25 } : { gLeaves: 1, lid: 1 },
+      prepare: { lid: 1 }, warm: {}, view: { lid: 1 }, pry: { lid: 1 }, add: { hLeaves: 1 }, smell: glass ? { wLeaves: 1, wLevel: 0.3, wTint: 0.25 } : { gLeaves: 1, lid: 1 },
       rinse: { gLeaves: 1 }, brew: glass ? { wLeaves: 1, wLevel: 0.3, wTint: 0.25 } : { gLeaves: 1 },
       pour: { gLeaves: 1, gLevel: 0.8, gTint: 1, lid: 1 },
       share: { gLeaves: 1, pLevel: 0.82, lid: 1 },
@@ -298,6 +299,16 @@
         }
         break;
       case "view":
+        if (tea.cake) {
+          c.label(0, "取出茶餅，雙手托起").key("cakeOn", 0, 0).key("cakeOn", 0.5, 1).key("cakeS", 0.5, 1).key("cakeY", 0.5, 0)
+            .key("cakeS", 2.0, 1.35).key("cakeY", 2.0, -8).key("cakeX", 2.0, 90).key("cakeS", 5.4, 1.35).key("cakeY", 5.4, -8).key("cakeX", 5.4, 90)
+            .key("cakeR", 3.0, -5).key("cakeR", 4.0, 5).key("cakeR", 4.8, 0)
+            .key("cw", 0.3, 0).key("cw", 1.4, 1).key("cw", 6.0, 1).key("cw", 6.8, 0).key("cx", 0, 600).key("cy", 0, 410).key("cz", 0, 1.5);
+          c.label(2.2, "觀察餅面：條索肥壯、芽毫多、壓製鬆緊適中");
+          c.label(4.6, `${tea.sample}・${tea.family}`);
+          c.key("cakeS", 6.0, 1).key("cakeY", 6.0, 0).key("cakeX", 6.0, 0).key("cakeOn", 6.4, 1);
+          break;
+        }
         c.label(0, "以茶則取茶，放入茶荷").key("hLeaves", 0.3, 0).key("hLeaves", 1.6, 1);
         c.label(1.9, "雙手捧茶荷，請客人賞茶");
         c.key("hx", 1.8, 0).key("hy", 1.8, 0).key("hs", 1.8, 1).key("hx", 2.8, -250).key("hy", 2.8, 56).key("hs", 2.8, 1.6)
@@ -305,6 +316,25 @@
           .key("hx", 4.6, -250).key("hy", 4.6, 56).key("hs", 4.6, 1.6).key("hx", 5.5, 0).key("hy", 5.5, 0).key("hs", 5.5, 1);
         c.label(4.6, `${tea.sample}・${tea.family}`);
         break;
+      case "pry": {
+        const cx0 = 520, cy0 = 470;
+        const px = HOME.chahe.x + 2, py = HOME.chahe.y - 20;
+        c.label(0, "茶餅放在茶盤前，茶刀備好").key("cakeOn", 0, 0).key("cakeOn", 0.4, 1)
+          .key("knX", 0, 82).key("knY", 0, 8).key("knR", 0, 30);
+        c.key("cw", 0.2, 0).key("cw", 1.0, 1).key("cx", 0, 580).key("cy", 0, 410).key("cz", 0, 1.6);
+        c.label(1.4, "茶刀從茶餅邊緣側面插入").key("knX", 1.2, 82).key("knY", 1.2, 8).key("knR", 1.2, 30).key("knX", 2.2, 54).key("knY", 2.2, -24).key("knR", 2.2, 30);
+        c.label(2.8, "順著茶葉紋理輕輕往上撬，不要硬折");
+        c.key("knR", 2.8, 30).key("knR", 3.4, 12).key("knR", 4.0, 30);
+        const chunk = (t) => c.key("chOn", t, 0).key("chOn", t + 0.1, 1).key("chX", t, cx0 + 50).key("chY", t, cy0 - 26)
+          .key("chX", t + 0.7, (cx0 + 50 + px) / 2).key("chY", t + 0.7, py - 46).key("chX", t + 1.3, px).key("chY", t + 1.3, py).key("chOn", t + 1.35, 0);
+        c.label(4.2, "撬下適量茶塊，落入茶荷");
+        chunk(4.2); c.key("hLeaves", 4.2, 0).key("hLeaves", 5.5, 0.55);
+        c.key("knR", 5.3, 30).key("knR", 5.8, 12).key("knR", 6.3, 30);
+        chunk(6.0); c.key("hLeaves", 6.0, 0.55).key("hLeaves", 7.3, 1);
+        c.label(7.6, "每次撬少量；按投茶量取足，剩餘茶餅收好").key("knX", 7.4, 54).key("knY", 7.4, -24).key("knR", 7.4, 30).key("knX", 8.2, 82).key("knY", 8.2, 8).key("knR", 8.2, 30)
+          .key("cakeOn", 8.4, 1).key("cakeOn", 9.0, 0).key("cw", 8.6, 1).key("cw", 9.4, 0);
+        break;
+      }
       case "add": {
         const tgt = glass ? glassTop() : gaiwanTop();
         if (glass) {
@@ -434,8 +464,8 @@
           c.key("lid", 0, 1).key("lid", 0.5, 0);
           let t = kettlePour(c, 0.1, gWall(), { r: 40, h0: 20, h: 70, dur: 1.6 });
           c.key("gLevel", 1.0, 0).key("gLevel", 2.5, 0.8).key("gTint", 1.0, 0).key("gTint", 4.4, 1).key("lid", t - 0.3, 0).key("lid", t + 0.2, 1);
-          c.label(t + 0.3, `本示範第二泡約 ${tea.steeps.first + tea.steeps.add} 秒・可續泡數次`).key("timer", t + 0.3, 0).key("timer", t + 2.0, 1)
-            .key("timerText", t + 0.3, `${tea.steeps.first + tea.steeps.add}秒`).key("timer", t + 2.1, 0);
+          c.label(t + 0.3, `本示範第二泡約 ${TEA_DATA.infTime(tea, 2)} 秒・可續泡數次`).key("timer", t + 0.3, 0).key("timer", t + 2.0, 1)
+            .key("timerText", t + 0.3, `${TEA_DATA.infTime(tea, 2)}秒`).key("timer", t + 2.1, 0);
         }
         break;
       case "phoenix":
@@ -640,6 +670,8 @@
     shadow(R.holder, 20, 5); img(R.holder, "holder");
     R.towel = el("g", { transform: `translate(${HOME.towel.x},${HOME.towel.y})` }, R.layer);
     shadow(R.towel, 46, 9); img(R.towel, "towel");
+
+
     // 水洗（右上）、茶席插花（左前）
     R.wash = el("g", { transform: `translate(${HOME.wash.x},${HOME.wash.y})` }, R.layer);
     shadow(R.wash, 46, 9); img(R.wash, "wash");
@@ -750,6 +782,7 @@
     });
 
     HOME.cups.map((c, i) => [c.y, i]).sort((a, b) => a[0] - b[0]).forEach(([, i]) => R.layer.appendChild(R.cups[i].g));
+
     R.pitcherNext = R.pitcher.nextSibling; R.gaiwanNext = R.gaiwan.nextSibling;
 
     // 茶荷
@@ -762,6 +795,16 @@
     // 茶撥：平時橫放在茶荷上，撥茶時抬起
     R.pick = el("g", {}, R.chahe);
     img(R.pick, "pick");
+
+    // 茶餅、茶刀、撬下的茶塊（只在普洱茶步驟出現）
+    R.cake = el("g", { transform: "translate(520,470)" }, R.layer);
+    shadow(R.cake, 62, 12);
+    el("image", { href: `${IMG}${style}/cake.webp`, x: -62, y: -84, width: 124, height: 87, preserveAspectRatio: "xMidYMax meet" }, R.cake);
+    R.knife = el("g", {}, R.layer);
+    el("image", { href: `${IMG}${style}/knife.webp`, x: 0, y: -67, width: 70, height: 67, preserveAspectRatio: "xMidYMid meet" }, R.knife);
+    R.chunk = el("g", {}, R.layer);
+    el("ellipse", { cx: 0, cy: 0, rx: 7, ry: 4.5, fill: "#4f3b27" }, R.chunk);
+    el("ellipse", { cx: -1.5, cy: -1.2, rx: 4, ry: 2.2, fill: "#7a6444", opacity: 0.8 }, R.chunk);
 
     // 茶夾：平時橫放在杯前，溫杯時夾住品茗杯
     R.tongs = el("g", {}, R.layer);
@@ -984,7 +1027,9 @@
       let x = HOME.cups[i].x + s["u" + i], y = HOME.cups[i].y + off + s["y" + i], sc = 1, r = s["r" + i];
       if (i === 1) { x += s.c1x; y += s.c1y; sc = s.c1s; r += s.c1r; y -= s.sip * 10; }
       c.g.setAttribute("transform", `translate(${x},${y}) scale(${sc}) rotate(${r} ${cr.cx} ${cr.cy + 8})`);
-      { const lift = Math.max(0, HOME.cups[i].y + off - y); c.sh.setAttribute("transform", `translate(0,${(lift / sc).toFixed(1)}) scale(${(1 + lift / 90).toFixed(3)},1)`); c.sh.style.opacity = Math.max(0.25, 1 - lift / 70).toFixed(2); }
+      const yl = i === 1 ? y - s.c1y : y;
+      if (i === 1) R.cupMats[1].setAttribute("transform", `translate(${x},${HOME.cups[1].y + s.y1 + s.c1y}) scale(${sc})`);
+      { const lift = Math.max(0, HOME.cups[i].y + off - yl); c.sh.setAttribute("transform", `translate(0,${(lift / sc).toFixed(1)}) scale(${(1 + lift / 90).toFixed(3)},1)`); c.sh.style.opacity = Math.max(0.25, 1 - lift / 70).toFixed(2); }
             const on = l > 0.02;
       const cy = cr.cy + (1 - l) * cr.ry * 1.05, rx = cr.rx * 0.9 * (0.7 + 0.3 * l), ry = cr.ry * 0.82 * (0.7 + 0.3 * l);
       [c.liq, c.depth, c.hi].forEach((e) => { e.setAttribute("cy", cy); e.setAttribute("rx", rx); e.setAttribute("ry", ry); e.style.opacity = on ? 1 : 0; });
@@ -1040,6 +1085,13 @@
     R.chaheShadow.style.opacity = Math.max(0, 1 - Math.abs(s.hy) / 30);
     R.hPile.style.opacity = Math.min(1, s.hLeaves * 1.6);
     { const py = q.chPile.y + q.chPile.w * 0.36; R.hPile.setAttribute("transform", `translate(${q.chPile.x},${py}) scale(${(0.35 + 0.65 * s.hLeaves).toFixed(3)},${(0.2 + 0.8 * s.hLeaves).toFixed(3)}) translate(${-q.chPile.x},${-py})`); }
+    // 茶餅、茶刀、茶塊
+    R.cake.style.opacity = Math.min(1, s.cakeOn);
+    R.cake.setAttribute("transform", `translate(${520 + s.cakeX},${470 + s.cakeY}) scale(${s.cakeS}) rotate(${s.cakeR} 0 -30)`);
+    R.knife.style.opacity = Math.min(1, s.cakeOn) * (s.mode === "gaiwan" && (s.knX !== 0 || s.knY !== 0) ? 1 : 0);
+    R.knife.setAttribute("transform", `translate(${520 + s.knX},${470 + s.knY}) rotate(${s.knR})`);
+    R.chunk.style.opacity = s.chOn;
+    R.chunk.setAttribute("transform", `translate(${s.chX},${s.chY})`);
     // 茶撥
     const pa = lerp(-12, 12, s.hp) + Math.sin(s.hpw * Math.PI * 4) * 9 * s.hp;
     R.pick.setAttribute("transform", `translate(${44 - 6 * s.hp - 30 * s.hpw * s.hp},${-12 - 3 * s.hp + 4 * s.hpw * s.hp}) scale(-1,1) rotate(${pa})`);
