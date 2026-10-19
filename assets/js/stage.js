@@ -114,7 +114,7 @@
     return {
       mode, show: 1,
       kx: 0, ky: 0, kr: 0,
-      gx: 0, gy: 0, gr: 0, gLevel: 0, gTint: 0, gLeaves: 0, lid: 0, lidX: 0, lidR: 0, hd: 0,
+      gx: 0, gy: 0, gr: 0, gLevel: 0, gTint: 0, gLeaves: 0, lid: 0, lidX: 0, lidR: 0, hd: 0, ph: 0, ch: 0,
       wx: 0, wy: 0, wr: 0, ws: 1, wLevel: 0, wTint: 0, wLeaves: 0, dance: 0,
       px: 0, py: 0, pr: 0, pLevel: 0, pTint: 1,
       u0: 0, u1: 0, u2: 0, tg: 0, tgi: 0, sC: 0, hp: 0, hpw: 0, c0: 0, c1: 0, c2: 0, cTint: 1, c1x: 0, c1y: 0, c1s: 1, c1r: 0, r0: 0, r1: 0, r2: 0, y0: 0, y1: 0, y2: 0, lidGap: 0, sW: 0,
@@ -376,6 +376,7 @@
         c.label(t - 0.6, "每杯七分滿，濃淡一致");
         t = pitcherPour(c, t - 0.3, 2, 0.8, 0.3, 0.06, 0, 0.7);
         t = pitcherHome(c, t);
+        c.key("ph", 0, 0).key("ph", 0.5, 1).key("ph", t - 0.5, 1).key("ph", t - 0.1, 0);
         c.key("cw", 0, 0).key("cw", 0.6, 1).key("cw", t - 0.4, 1).key("cw", t + 0.4, 0).key("cx", 0, 400).key("cy", 0, 330).key("cz", 0, 1.6);
         break;
       }
@@ -388,6 +389,7 @@
           c.label(0, "雙手托杯，奉到客人面前");
           c.key("c1x", 0.4, 0).key("c1y", 0.4, 0).key("c1s", 0.4, 1).key("c1y", 1.1, -14).key("c1y", 1.5, -14).key("c1x", 3.2, 30).key("c1y", 3.2, 72).key("c1s", 3.2, 1.12)
             .key("c1y", 3.55, 82).key("c1y", 3.8, 80).key("c1x", 3.8, 30).key("c1s", 3.8, 1.12);
+          c.key("ch", 0.2, 0).key("ch", 0.6, 1).key("ch", 3.9, 1).key("ch", 4.4, 0);
           c.label(3.3, "輕放在客人右前方：「請用茶」").key("steamCup", 0, 0).key("steamCup", 3.4, 1);
           c.label(4.8, "客人以「叩指禮」回禮").key("steamCup", 6.4, 1);
           c.key("cw", 0, 0).key("cw", 0.6, 1).key("cw", 6.0, 1).key("cw", 6.6, 0).key("cx", 0, 410).key("cy", 0, 330).key("cz", 0, 1.6);
@@ -493,12 +495,13 @@
   /* ---------- 單品圖版面 ---------- */
   const KIT = window.TEA_KIT;
   const IMG = "assets/img/kit/";
+  const PHAND = { R: 453, I: 443 }, CHAND = { R: 469, I: 464 };
   const PARTS = ["bowl", "saucer", "lid", "cup", "kettle", "stove", "chahe", "towel", "pitcher", "tumbler", "holder", "wash", "tongs", "pick", "scoop", "gclosed"];
   const WET = ["wet-00", "wet-01", "wet-02", "wet-03", "wet-04", "wet-05", "wet-06", "wet-07", "wet-08", "wet-09", "wet-10", "wet-11"];
   const TEA_IDS = ["green", "white", "yellow", "oolong", "black", "shengpu", "shoupu", "jasmine"];
 
   function imageList(style) {
-    return [IMG + style + "/bg.webp"].concat(PARTS.concat("ghand").map((n) => `${IMG}${style}/${n}.webp`), WET.map((n) => `${IMG}${style}/${n}.webp`), TEA_IDS.map((n) => `${IMG}${style}/dry-${n}.webp`));
+    return [IMG + style + "/bg.webp"].concat(PARTS.concat("ghand", "phand", "chand").map((n) => `${IMG}${style}/${n}.webp`), WET.map((n) => `${IMG}${style}/${n}.webp`), TEA_IDS.map((n) => `${IMG}${style}/dry-${n}.webp`));
   }
   const loaded = {};
   function preload(style) {
@@ -711,6 +714,11 @@
     R.pLiquidDepth = el("rect", { x: px0 - 4, y: 0, width: px1 - px0 + 8, height: 200, fill: "url(#tb-lqdepth)" }, pIn);
     R.pSurface = el("ellipse", { cx: (px0 + px1) / 2, cy: 0, rx: (px1 - px0) / 2 * 0.97, ry: (px1 - px0) / 2 * 0.17, fill: "#fff", "fill-opacity": 0.16, stroke: "#fff", "stroke-opacity": 0.55, "stroke-width": 0.9 }, pIn);
     R.pImg = img(R.pBody, "pitcher");
+    {
+      const sp = g.pitcher.w / 324, ph = PHAND[style];
+      R.pHand = el("image", { href: href("phand"), x: g.pitcher.x - 60 * sp, y: g.pitcher.y - 120 * sp, width: 644 * sp, height: ph * sp }, R.pBody);
+      R.pHand.style.display = "none";
+    }
 
     // 品茗杯
     const cr = q.cRim;
@@ -724,13 +732,16 @@
     R.cups = HOME.cups.map(() => {
       const gr = el("g", {}, R.layer);
       shadow(gr, 30, 6);
-      img(gr, "cup");
+      const cImg = img(gr, "cup");
+      const sc = g.cup.w / 255;
+      const cHand = el("image", { href: href("chand"), x: g.cup.x - 100 * sc, y: g.cup.y - 100 * sc, width: 455 * sc, height: CHAND[style] * sc }, gr);
+      cHand.style.display = "none";
       const cid = clipEllipse(defs, { cx: cr.cx, cy: cr.cy + 0.5, rx: cr.rx * 0.97, ry: cr.ry * 0.9 });
       const ci = el("g", { "clip-path": `url(#${cid})` }, gr);
       const liq = el("ellipse", { cx: cr.cx, cy: cr.cy, rx: cr.rx * 0.9, ry: cr.ry * 0.82 }, ci);
       const depth = el("ellipse", { cx: cr.cx, cy: cr.cy, rx: cr.rx * 0.9, ry: cr.ry * 0.82, fill: "url(#tb-lqdepth)" }, ci);
       const hi = el("ellipse", { cx: cr.cx, cy: cr.cy, rx: cr.rx * 0.9, ry: cr.ry * 0.82, fill: "url(#tb-lqhi)" }, ci);
-      return { g: gr, liq, depth, hi };
+      return { g: gr, liq, depth, hi, cImg, cHand };
     });
 
     HOME.cups.map((c, i) => [c.y, i]).sort((a, b) => a[0] - b[0]).forEach(([, i]) => R.layer.appendChild(R.cups[i].g));
@@ -941,6 +952,8 @@
     R.pSurface.setAttribute("cy", pTop); R.pSurface.setAttribute("transform", `rotate(${-s.pr} 0 ${pTop})`);
     R.pLiquid.setAttribute("fill", mixColor(WATER, teaCol, s.pTint));
     const pOn = s.pLevel > 0.01;
+    R.pHand.style.opacity = s.ph.toFixed(3);
+    R.pHand.style.display = s.ph > 0.01 && !glass ? "" : "none";
     R.pImg.style.opacity = (1 - 0.1 * Math.min(1, s.pLevel * 8)).toFixed(2);
     R.pLiquid.style.opacity = pOn ? 0.74 : 0; R.pLiquidDepth.style.opacity = pOn ? 1 : 0; R.pSurface.style.opacity = pOn ? 1 : 0;
     if (!glass && pOn && s.pLevel > 0.12 && s.pr > -12) emit.push({ k: "pst", type: "steam", x: HOME.pitcher.x + s.px + q.pRim.cx, y: HOME.pitcher.y + s.py + q.pRim.cy - 2, rate: 2.2, spread: 36, lift: 0.8, alpha: 0.3 });
@@ -953,6 +966,10 @@
       let x = HOME.cups[i].x + s["u" + i], y = HOME.cups[i].y + off + s["y" + i], sc = 1, r = s["r" + i];
       if (i === 1) { x += s.c1x; y += s.c1y; sc = s.c1s; r += s.c1r; y -= s.sip * 10; }
       c.g.setAttribute("transform", `translate(${x},${y}) scale(${sc}) rotate(${r} ${cr.cx} ${cr.cy + 8})`);
+      const chk = i === 1 && !glass ? s.ch : 0;
+      c.cHand.style.opacity = chk.toFixed(3);
+      c.cHand.style.display = chk > 0.01 ? "" : "none";
+      c.cImg.style.opacity = chk > 0.99 ? 0 : "";
       const on = l > 0.02;
       const cy = cr.cy + (1 - l) * cr.ry * 1.05, rx = cr.rx * 0.9 * (0.7 + 0.3 * l), ry = cr.ry * 0.82 * (0.7 + 0.3 * l);
       [c.liq, c.depth, c.hi].forEach((e) => { e.setAttribute("cy", cy); e.setAttribute("rx", rx); e.setAttribute("ry", ry); e.style.opacity = on ? 1 : 0; });
