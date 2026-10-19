@@ -4,15 +4,15 @@
   /* 器具擺位（舞台座標 800×500，原點為各器具底部中心）；L 為按單品圖錨點計算出的相對位置，見 applyKit()。 */
   /* 茶席擺位（對齊人物場景）：茶盤居中；蓋碗、公道杯分列茶盤中線兩側；三杯在茶盤前方的桌面（不在盤上）；水洗在右上；茶巾在右前 */
   const HOME = {
-    kettle: { x: 62, y: 212 },
+    kettle: { x: 66, y: 246 },
         gaiwan: { x: 338, y: 262 },
     glass: { x: 390, y: 262 },
-    towel: { x: 70, y: 272 },
+    towel: { x: 66, y: 296 },
     pitcher: { x: 442, y: 262 },
     cups: [{ x: 318, y: 376 }, { x: 394, y: 376 }, { x: 470, y: 376 }],
-    chahe: { x: 640, y: 446 },
-    holder: { x: 768, y: 424 },
-    wash: { x: 78, y: 352 },
+    chahe: { x: 648, y: 414 },
+    holder: { x: 764, y: 408 },
+    wash: { x: 74, y: 370 },
     scoop: { x: 712, y: 482 },
     tray: { x: 390, y: 262 },
     trayRect: { x0: 129, x1: 652, y0: 204, y1: 326 }
@@ -300,9 +300,9 @@
       case "view":
         c.label(0, "以茶則取茶，放入茶荷").key("hLeaves", 0.3, 0).key("hLeaves", 1.6, 1);
         c.label(1.9, "雙手捧茶荷，請客人賞茶");
-        c.key("hx", 1.8, 0).key("hy", 1.8, 0).key("hs", 1.8, 1).key("hx", 2.8, -250).key("hy", 2.8, -34).key("hs", 2.8, 1.9)
+        c.key("hx", 1.8, 0).key("hy", 1.8, 0).key("hs", 1.8, 1).key("hx", 2.8, -250).key("hy", 2.8, 56).key("hs", 2.8, 1.6)
           .key("hr", 3.2, -4).key("hr", 3.8, 4).key("hr", 4.3, 0)
-          .key("hx", 4.6, -250).key("hy", 4.6, -34).key("hs", 4.6, 1.9).key("hx", 5.5, 0).key("hy", 5.5, 0).key("hs", 5.5, 1);
+          .key("hx", 4.6, -250).key("hy", 4.6, 56).key("hs", 4.6, 1.6).key("hx", 5.5, 0).key("hy", 5.5, 0).key("hs", 5.5, 1);
         c.label(4.6, `${tea.sample}・${tea.family}`);
         break;
       case "add": {
