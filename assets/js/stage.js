@@ -683,7 +683,7 @@
 
     // 玻璃杯（茶湯在玻璃後面，玻璃高光疊在上面）
     R.glass = el("g", {}, R.layer);
-    shadow(R.glass, 34, 7);
+    R.glassShadow = shadow(R.glass, 34, 7);
     R.gBody = el("g", {}, R.glass);
     const tClip = clipPoly(defs, q.tPoly);
     R.wIn = el("g", { "clip-path": `url(#${tClip})` }, R.gBody);
@@ -731,7 +731,7 @@
     });
     R.cups = HOME.cups.map(() => {
       const gr = el("g", {}, R.layer);
-      shadow(gr, 30, 6);
+      const sh = shadow(gr, 30, 6);
       const cImg = img(gr, "cup");
       const sc = g.cup.w / 255;
       const cHand = el("image", { href: href("chand"), x: g.cup.x - 100 * sc, y: g.cup.y - 100 * sc, width: 455 * sc, height: CHAND[style] * sc }, gr);
@@ -741,7 +741,7 @@
       const liq = el("ellipse", { cx: cr.cx, cy: cr.cy, rx: cr.rx * 0.9, ry: cr.ry * 0.82 }, ci);
       const depth = el("ellipse", { cx: cr.cx, cy: cr.cy, rx: cr.rx * 0.9, ry: cr.ry * 0.82, fill: "url(#tb-lqdepth)" }, ci);
       const hi = el("ellipse", { cx: cr.cx, cy: cr.cy, rx: cr.rx * 0.9, ry: cr.ry * 0.82, fill: "url(#tb-lqhi)" }, ci);
-      return { g: gr, liq, depth, hi, cImg, cHand };
+      return { g: gr, sh, liq, depth, hi, cImg, cHand };
     });
 
     HOME.cups.map((c, i) => [c.y, i]).sort((a, b) => a[0] - b[0]).forEach(([, i]) => R.layer.appendChild(R.cups[i].g));
@@ -965,6 +965,7 @@
       let x = HOME.cups[i].x + s["u" + i], y = HOME.cups[i].y + off + s["y" + i], sc = 1, r = s["r" + i];
       if (i === 1) { x += s.c1x; y += s.c1y; sc = s.c1s; r += s.c1r; y -= s.sip * 10; }
       c.g.setAttribute("transform", `translate(${x},${y}) scale(${sc}) rotate(${r} ${cr.cx} ${cr.cy + 8})`);
+      { const lift = Math.max(0, HOME.cups[i].y + off - y); c.sh.setAttribute("transform", `translate(0,${(lift / sc).toFixed(1)}) scale(${(1 + lift / 90).toFixed(3)},1)`); c.sh.style.opacity = Math.max(0.25, 1 - lift / 70).toFixed(2); }
             const on = l > 0.02;
       const cy = cr.cy + (1 - l) * cr.ry * 1.05, rx = cr.rx * 0.9 * (0.7 + 0.3 * l), ry = cr.ry * 0.82 * (0.7 + 0.3 * l);
       [c.liq, c.depth, c.hi].forEach((e) => { e.setAttribute("cy", cy); e.setAttribute("rx", rx); e.setAttribute("ry", ry); e.style.opacity = on ? 1 : 0; });
@@ -989,6 +990,7 @@
       const wr = s.wr, tb = R.tb;
       R.glass.setAttribute("transform", `translate(${HOME.glass.x + s.wx},${HOME.glass.y + s.wy + wOff}) scale(${s.ws})`);
       R.gBody.setAttribute("transform", `rotate(${wr} ${L.tPivot.x} -2)`);
+      { const lift = Math.max(0, -s.wy - wOff); R.glassShadow.setAttribute("transform", `translate(0,${(lift / s.ws).toFixed(1)}) scale(${(1 + lift / 90).toFixed(3)},1)`); R.glassShadow.style.opacity = Math.max(0.25, 1 - lift / 70).toFixed(2); }
       const top = L.glassFloor - s.wLevel * L.glassH;
       const hgt = Math.max(0, L.glassFloor - top + 12);
       [R.wLiquid, R.wLiquidDepth].forEach((e) => { e.setAttribute("y", top); e.setAttribute("height", hgt); e.setAttribute("transform", `rotate(${-wr} 0 ${top})`); });
@@ -1021,7 +1023,7 @@
     { const py = q.chPile.y + q.chPile.w * 0.36; R.hPile.setAttribute("transform", `translate(${q.chPile.x},${py}) scale(${(0.35 + 0.65 * s.hLeaves).toFixed(3)},${(0.2 + 0.8 * s.hLeaves).toFixed(3)}) translate(${-q.chPile.x},${-py})`); }
     // 茶撥
     const pa = lerp(-12, 12, s.hp) + Math.sin(s.hpw * Math.PI * 4) * 9 * s.hp;
-    R.pick.setAttribute("transform", `translate(${44 - 6 * s.hp},${-12 - 3 * s.hp}) scale(-1,1) rotate(${pa})`);
+    R.pick.setAttribute("transform", `translate(${44 - 6 * s.hp - 30 * s.hpw * s.hp},${-12 - 3 * s.hp + 4 * s.hpw * s.hp}) scale(-1,1) rotate(${pa})`);
     // 茶夾：平時收在茶道組；溫杯時取出，夾住品茗杯右沿，隨杯移動、傾側，用完放回
     R.tongs.style.display = glass || s.tr < 0.02 ? "none" : "";
     {
