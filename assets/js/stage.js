@@ -114,7 +114,7 @@
     return {
       mode, show: 1,
       kx: 0, ky: 0, kr: 0,
-      gx: 0, gy: 0, gr: 0, gLevel: 0, gTint: 0, gLeaves: 0, lid: 0, lidX: 0, lidR: 0,
+      gx: 0, gy: 0, gr: 0, gLevel: 0, gTint: 0, gLeaves: 0, lid: 0, lidX: 0, lidR: 0, hd: 0,
       wx: 0, wy: 0, wr: 0, ws: 1, wLevel: 0, wTint: 0, wLeaves: 0, dance: 0,
       px: 0, py: 0, pr: 0, pLevel: 0, pTint: 1,
       u0: 0, u1: 0, u2: 0, tg: 0, tgi: 0, sC: 0, hp: 0, hpw: 0, c0: 0, c1: 0, c2: 0, cTint: 1, c1x: 0, c1y: 0, c1s: 1, c1r: 0, r0: 0, r1: 0, r2: 0, y0: 0, y1: 0, y2: 0, lidGap: 0, sW: 0,
@@ -362,7 +362,8 @@
         break;
       case "pour":
         c.label(0, "三指法：拇指中指扣碗沿，食指按蓋鈕");
-        gaiwanPour(c, 0.6, pitcherTop(), 2.6, 0.8);
+        { const te = gaiwanPour(c, 0.6, pitcherTop(), 2.6, 0.8);
+          c.key("hd", 0.45, 0).key("hd", 0.85, 1).key("hd", 0.6 + 1.25 + 2.6, 1).key("hd", te - 0.5, 0); }
         c.key("pTint", 0, 1).key("pLevel", 2.0, 0).key("pLevel", 4.2, 0.82);
         c.label(2.0, "留一道縫出湯，茶葉留在碗內").label(4.4, "最後幾滴也要瀝乾");
         c.key("drop", 4.4, 0).key("drop", 5.0, 0.999).key("drop", 5.01, 0).key("dropTarget", 0, "pitcher");
@@ -497,7 +498,7 @@
   const TEA_IDS = ["green", "white", "yellow", "oolong", "black", "shengpu", "shoupu", "jasmine"];
 
   function imageList(style) {
-    return [IMG + style + "/bg.webp"].concat(PARTS.map((n) => `${IMG}${style}/${n}.webp`), WET.map((n) => `${IMG}${style}/${n}.webp`), TEA_IDS.map((n) => `${IMG}${style}/dry-${n}.webp`));
+    return [IMG + style + "/bg.webp"].concat(PARTS.concat("ghand").map((n) => `${IMG}${style}/${n}.webp`), WET.map((n) => `${IMG}${style}/${n}.webp`), TEA_IDS.map((n) => `${IMG}${style}/dry-${n}.webp`));
   }
   const loaded = {};
   function preload(style) {
@@ -670,6 +671,12 @@
     el("path", { d: `M${br.cx - fx - 30} ${br.cy}L${br.cx - fx} ${br.cy}A${fx} ${fy} 0 0 0 ${br.cx + fx} ${br.cy}L${br.cx + fx + 30} ${br.cy}L${br.cx + fx + 30} ${br.cy + 300}L${br.cx - fx - 30} ${br.cy + 300}Z` }, el("clipPath", { id: fid }, defs));
     R.gFront = img(R.gBowl, "bowl", q.bowlOff.x, q.bowlOff.y);
     R.gFront.setAttribute("clip-path", `url(#${fid})`);
+    // 三指握碗：整件圖（碗＋留縫的蓋＋右手），疊在碗身上隨碗傾斜；以碗圖為基準對位
+    {
+      const sz = KIT.sizes[style].ghand, sb = g.bowl.w / (sz[0] - 200);
+      R.gHand = el("image", { href: href("ghand"), x: g.bowl.x + q.bowlOff.x - 100 * sb, y: g.bowl.y + q.bowlOff.y - 140 * sb, width: sz[0] * sb, height: sz[1] * sb }, R.gBowl);
+      R.gBowlParts = Array.from(R.gBowl.children).filter((n) => n !== R.gHand);
+    }
 
     // 玻璃杯（茶湯在玻璃後面，玻璃高光疊在上面）
     R.glass = el("g", {}, R.layer);
@@ -910,6 +917,9 @@
     const lidOn = { x: br.cx + s.lidX - 4 * s.lidGap * gdir, y: br.cy + 1 - 0.6 * s.lidGap, r: s.lidR - 5 * s.lidGap * gdir }, lidOff = { x: br.cx - br.rx - 14, y: br.cy + 38, r: -8 };
     R.lid.setAttribute("transform", `translate(${lerp(lidOff.x, lidOn.x, lk)},${lerp(lidOff.y, lidOn.y, lk)}) rotate(${lerp(lidOff.r, lidOn.r, lk)})`);
     R.gFront.style.display = lk > 0.6 ? "" : "none";
+    R.gHand.style.opacity = s.hd.toFixed(3);
+    R.gHand.style.display = s.hd > 0.01 && !glass ? "" : "none";
+    R.gBowlParts.forEach((n) => { n.style.opacity = s.hd > 0.99 ? 0 : ""; });
     const closed = !glass && lk > 0.99 && s.lidGap < 0.02 && Math.abs(s.lidX) < 0.05 && Math.abs(s.lidR) < 0.05 && Math.abs(s.gr) < 0.05 && Math.abs(s.gx) < 0.05 && Math.abs(s.gy) < 0.05;
     const ck = R.closedK = quiet || R.closedK == null ? (closed ? 1 : 0) : (R.closedK || 0) + ((closed ? 1 : 0) - (R.closedK || 0)) * (1 - Math.exp(-Math.max(dt, 0.001) / 0.07));
     const gOp = +R.gaiwan.style.opacity;
