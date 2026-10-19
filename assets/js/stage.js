@@ -363,7 +363,7 @@
       case "pour":
         c.label(0, "三指法：拇指中指扣碗沿，食指按蓋鈕");
         { const te = gaiwanPour(c, 0.6, pitcherTop(), 2.6, 0.8);
-          c.key("hd", 0.45, 0).key("hd", 0.85, 1).key("hd", 0.6 + 1.25 + 2.6, 1).key("hd", te - 0.5, 0); }
+          c.key("hd", 0.45, 0).key("hd", 0.85, 1).key("hd", 0.6 + 1.7 + 2.6, 1).key("hd", te - 0.2, 0); }
         c.key("pTint", 0, 1).key("pLevel", 2.0, 0).key("pLevel", 4.2, 0.82);
         c.label(2.0, "留一道縫出湯，茶葉留在碗內").label(4.4, "最後幾滴也要瀝乾");
         c.key("drop", 4.4, 0).key("drop", 5.0, 0.999).key("drop", 5.01, 0).key("dropTarget", 0, "pitcher");
