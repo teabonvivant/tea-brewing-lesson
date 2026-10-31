@@ -252,11 +252,7 @@
   });
   $("prevBtn").onclick = () => { goStep(state.step - 1, true); showCloseup(); };
   $("nextBtn").onclick = () => { goStep(state.step + 1, true); showCloseup(); };
-  /* 畫面風格、音效、背景音樂 */
-  const paintStyle = () => { const st = TeaStage.getStyle(); $("styleR").setAttribute("aria-pressed", st === "R"); $("styleI").setAttribute("aria-pressed", st === "I"); };
-  $("styleR").onclick = () => { TeaStage.setStyle("R"); paintStyle(); renderTools(); };
-  $("styleI").onclick = () => { TeaStage.setStyle("I"); paintStyle(); renderTools(); };
-  paintStyle();
+  /* 音效、背景音樂 */
   if (window.TeaAudio) {
     const paintAudio = (a) => {
       $("sfxBtn").setAttribute("aria-pressed", a.sfx); $("sfxBtn").setAttribute("aria-label", a.sfx ? "音效：開" : "音效：關");
@@ -422,7 +418,7 @@
   /* ---------- 茶具 ---------- */
   const TOOL_IMG = { gaiwan: "tools/gaiwan", pitcher: "kit/{s}/pitcher", cup: "kit/{s}/cup", chahe: "kit/{s}/chahe", chaze: "kit/{s}/scoop", chabo: "kit/{s}/pick", tongs: "kit/{s}/tongs", wash: "kit/{s}/wash", vase: "kit/{s}/vase", kettle: "kit/{s}/kettle", glass: "kit/{s}/tumbler", towel: "kit/{s}/towel" };
   function renderTools() {
-    const st = TeaStage.getStyle();
+    const st = "I";
     $("toolGrid").innerHTML = D.tools
       .map((t) => `<div class="tool"><span class="tool-img" aria-hidden="true"><img src="assets/img/${TOOL_IMG[t.id].replace("{s}", st)}${t.id === "gaiwan" ? "-" + st : ""}.webp" alt="" loading="lazy" decoding="async"></span>
         <h3>${esc(t.name)}${t.alias ? `<small>${esc(t.alias)}</small>` : ""}</h3><p>${esc(t.desc)}</p></div>`)

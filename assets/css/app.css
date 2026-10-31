@@ -96,10 +96,7 @@ a { color: inherit; }
 .track-sel option { color: #2b211a; background: #fbf1dc; }
 .foot-credit { margin-top: 10px; font-size: 13px; opacity: .8; }
 .foot-credit a { color: inherit; }
-.seg { display: inline-flex; padding: 2px; border-radius: 999px; background: rgba(255, 255, 255, .08); margin-right: 2px; }
-.seg button { border: 0; background: transparent; color: #e9d6b2; font: inherit; font-size: 13px; font-weight: 600; letter-spacing: .06em; white-space: nowrap; padding: 6px 12px; border-radius: 999px; cursor: pointer; min-height: 32px; transition: background .2s var(--ease), color .2s var(--ease); }
-.seg button[aria-pressed="true"] { background: #e2b866; color: #2b211a; }
-.seg button:focus-visible, .icon-btn:focus-visible { outline: 2px solid #e2b866; outline-offset: 2px; }
+.icon-btn:focus-visible { outline: 2px solid #e2b866; outline-offset: 2px; }
 .icon-btn[aria-pressed="true"] { background: #e2b866; color: #2b211a; }
 .icon-btn[aria-pressed="true"] .off-only, .icon-btn[aria-pressed="false"] .on-only { display: none; }
 .tag { white-space: nowrap; font-size: 13px; letter-spacing: .16em; color: #e9d6b2; }
@@ -384,7 +381,5 @@ a.td-btn { text-decoration: none; }
   .closeup-tools { width: 100%; justify-content: space-between; gap: 4px; }
   .closeup-tools .icon-btn { width: 40px; height: 40px; }
   .track-sel { min-height: 40px; }
-  .seg button { padding: 7px 14px; min-height: 40px; }
-  .seg { margin-right: auto; }
   .tag { font-size: 12px; letter-spacing: .1em; }
 }

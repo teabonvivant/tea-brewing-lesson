@@ -4,19 +4,19 @@
   /* 器具擺位（舞台座標 800×500，原點為各器具底部中心）；L 為按單品圖錨點計算出的相對位置，見 applyKit()。 */
   /* 茶席擺位（對齊人物場景）：茶盤居中；蓋碗、公道杯分列茶盤中線兩側；三杯在茶盤前方的桌面（不在盤上）；水洗在右上；茶巾在右前 */
   const HOME = {
-    kettle: { x: 66, y: 246 },
-        gaiwan: { x: 338, y: 262 },
-    glass: { x: 390, y: 262 },
-    towel: { x: 66, y: 296 },
-    pitcher: { x: 442, y: 262 },
-    cups: [{ x: 318, y: 362 }, { x: 394, y: 362 }, { x: 470, y: 362 }],
-    chahe: { x: 700, y: 318 },
-    holder: { x: 768, y: 300 },
-    wash: { x: 92, y: 356 },
-    scoop: { x: 700, y: 362 },
-    lidRest: { x: 262, y: 300 },
-    tray: { x: 390, y: 262 },
-    trayRect: { x0: 129, x1: 652, y0: 204, y1: 326 }
+    kettle: { x: 98, y: 252 },
+    gaiwan: { x: 332, y: 276 },
+    glass: { x: 390, y: 276 },
+    towel: { x: 98, y: 296 },
+    pitcher: { x: 448, y: 276 },
+    cups: [{ x: 302, y: 360 }, { x: 390, y: 360 }, { x: 478, y: 360 }],
+    chahe: { x: 668, y: 318 },
+    holder: { x: 738, y: 300 },
+    wash: { x: 112, y: 356 },
+    scoop: { x: 668, y: 366 },
+    lidRest: { x: 279, y: 280 },
+    tray: { x: 390, y: 276 },
+    trayRect: { x0: 178, x1: 602, y0: 233, y1: 324 }
   };
 
   const L = {
@@ -330,21 +330,21 @@
         }
         {
           /* 茶葉已量好放在茶則上，由茶則倒入茶荷 */
-          const sx = HOME.chahe.x + L.chPile.x - 26 - HOME.scoop.x, sy = HOME.chahe.y + L.chPile.y - 26 - HOME.scoop.y;
+          const sx = HOME.chahe.x + L.chPile.x - L.scoopLen * 0.92 - HOME.scoop.x, sy = HOME.chahe.y + L.chPile.y - 22 - HOME.scoop.y;
           c.label(0, "茶葉量好放在茶則，倒入茶荷").key("scL", 0, 0).key("scL", 0.3, 1).key("fsrc", 0, 1);
           c.key("scX", 0.3, 0).key("scY", 0.3, 0).key("scY", 0.55, -10).key("scX", 1.15, sx).key("scY", 1.15, sy).key("scR", 1.25, 0).key("scR", 1.55, 24)
             .key("fall", 1.55, 0).key("fall", 2.45, 1).key("hLeaves", 1.6, 0).key("hLeaves", 2.5, 1).key("scL", 1.6, 1).key("scL", 2.4, 0)
             .key("scR", 2.5, 24).key("scR", 2.8, 0).key("scX", 2.85, sx).key("scY", 2.85, sy).key("scX", 3.4, 0).key("scY", 3.4, -10).key("scY", 3.55, 0);
           c.label(3.6, "雙手捧茶荷，請客人賞茶");
-          c.key("hx", 3.5, 0).key("hy", 3.5, 0).key("hs", 3.5, 1).key("hy", 3.75, -10).key("hx", 4.6, -302).key("hy", 4.6, 150).key("hs", 4.6, 1.25)
+          c.key("hx", 3.5, 0).key("hy", 3.5, 0).key("hs", 3.5, 1).key("hy", 3.75, -10).key("hx", 4.6, -270).key("hy", 4.6, 150).key("hs", 4.6, 1.25)
             .key("hr", 5.0, -5).key("hr", 5.5, 5).key("hr", 5.9, 0)
-            .key("hx", 6.3, -302).key("hy", 6.3, 150).key("hs", 6.3, 1.25).key("hx", 7.2, 0).key("hy", 7.2, -10).key("hs", 7.2, 1).key("hy", 7.4, 0);
+            .key("hx", 6.3, -270).key("hy", 6.3, 150).key("hs", 6.3, 1.25).key("hx", 7.2, 0).key("hy", 7.2, -10).key("hs", 7.2, 1).key("hy", 7.4, 0);
           c.label(5.4, `${tea.sample}・${tea.family}`);
         }
         break;
       case "pry": {
         const cx0 = 520, cy0 = 470;
-        const hx0 = -70, hy0 = 82, px = HOME.chahe.x + hx0 + 2, py = HOME.chahe.y + hy0 - 20;
+        const hx0 = -38, hy0 = 100, px = HOME.chahe.x + hx0 + 2, py = HOME.chahe.y + hy0 - 20;
         c.key("hx", 0.1, 0).key("hy", 0.1, 0).key("hx", 0.9, hx0).key("hy", 0.9, hy0).key("hx", 8.4, hx0).key("hy", 8.4, hy0).key("hx", 9.2, 0).key("hy", 9.2, 0);
         c.label(0, "茶餅放在茶盤前，茶荷移到旁邊").key("cakeOn", 0, 0).key("cakeOn", 0.4, 1)
           .key("knX", 0, 82).key("knY", 0, 8).key("knR", 0, 30);
@@ -430,7 +430,7 @@
         c.key("pTint", 0, 1).key("pLevel", p.on + 0.2, 0).key("pLevel", p.off, pFull);
         c.label(p.on, "留一道縫出湯，茶葉留在碗內").label(p.off - 0.2, "最後幾滴也要瀝乾");
         c.key("drop", p.off, 0).key("drop", p.off + 0.5, 0.999).key("drop", p.off + 0.51, 0).key("dropTarget", 0, "pitcher");
-        c.key("cw", 0, 0).key("cw", 0.7, 1).key("cw", p.off + 0.6, 1).key("cw", p.off + 1.3, 0).key("cx", 0, 392).key("cy", 0, 204).key("cz", 0, 1.75);
+        c.key("cw", 0, 0).key("cw", 0.7, 1).key("cw", p.off + 0.6, 1).key("cw", p.off + 1.3, 0).key("cx", 0, 390).key("cy", 0, 218).key("cz", 0, 1.75);
         break;
       }
       case "share": {
@@ -472,7 +472,7 @@
           c.label(0, "蓋上碗蓋，連碗輕搖數下").key("lid", 0, 1).key("gr", 0.4, 0).key("gr", 0.8, -6).key("gr", 1.2, 6).key("gr", 1.6, -6).key("gr", 2.0, 0);
           c.label(2.2, "提起蓋碗，碗蓋開一道縫，聞碗內乾茶受熱的香氣").key("lidGap", 2.6, 0).key("lidGap", 3.2, 1).key("lidGap", 5.2, 1).key("lidGap", 5.8, 0);
           c.key("gy", 2.1, 0).key("gy", 2.9, -66).key("gy", 5.3, -66).key("gy", 6.0, 0);
-          c.key("cw", 2.0, 0).key("cw", 2.8, 1).key("cw", 5.4, 1).key("cw", 6.1, 0).key("cx", 0, 338).key("cy", 0, 180).key("cz", 0, 1.5);
+          c.key("cw", 2.0, 0).key("cw", 2.8, 1).key("cw", 5.4, 1).key("cw", 6.1, 0).key("cx", 0, 332).key("cy", 0, 194).key("cz", 0, 1.5);
         }
         break;
       case "taste": {
@@ -567,8 +567,8 @@
   /* ---------- 單品圖版面 ---------- */
   const KIT = window.TEA_KIT;
   const IMG = "assets/img/kit/";
-  const PHAND = { R: 453, I: 443 }, CHAND = { R: 469, I: 464 };
-  const PARTS = ["bowl", "saucer", "lid", "cup", "kettle", "stove", "chahe", "towel", "pitcher", "tumbler", "holder", "wash", "tongs", "pick", "scoop", "gclosed"];
+  const PHAND = { I: 443 }, CHAND = { I: 464 };
+  const PARTS = ["bowl", "saucer", "lid", "lidlean", "cup", "mat", "kettle", "stove", "chahe", "towel", "pitcher", "tumbler", "holder", "wash", "tongs", "pick", "scoop"];
   const WET = ["wet-00", "wet-01", "wet-02", "wet-03", "wet-04", "wet-05", "wet-06", "wet-07", "wet-08", "wet-09", "wet-10", "wet-11"];
   const TEA_IDS = ["green", "white", "yellow", "oolong", "black", "shengpu", "shoupu", "jasmine"];
 
@@ -592,7 +592,7 @@
     const A = KIT.A[style], S = KIT.sizes[style], W = KIT.W;
     const g = {};
     PARTS.forEach((n) => {
-      const [w, h] = S[n], s = ((KIT.WS && KIT.WS[style] && KIT.WS[style][n]) || W[n]) / w, b = A[n].base || [0.5, 1];
+      const [w, h] = S[n], s = (W[n]) / w, b = A[n].base || [0.5, 1];
       g[n] = { s, w: w * s, h: h * s, x: -b[0] * w * s, y: -b[1] * h * s, a: A[n] };
     });
     const pt = (n, fx, fy, o = { x: 0, y: 0 }) => ({ x: g[n].x + fx * g[n].w + o.x, y: g[n].y + fy * g[n].h + o.y });
@@ -696,7 +696,7 @@
     shadow(R.stoveBack, 58, 11);
     img(R.stoveBack, "stove");
     const st = g.stove;
-    R.ember = el("ellipse", { cx: 0, cy: st.y + st.h * 0.69, rx: st.w * 0.26, ry: st.h * 0.13, fill: "url(#tb-ember)", style: "mix-blend-mode:screen" }, R.stoveBack);
+    R.ember = el("ellipse", { cx: 0, cy: st.y + st.h * 0.69, rx: st.w * 0.13, ry: st.h * 0.2, fill: "url(#tb-ember)", style: "mix-blend-mode:screen" }, R.stoveBack);
     R.kShadow = el("g", {}, R.layer);
     shadow(R.kShadow, 46, 8);
     R.kettle = el("g", {}, R.layer);
@@ -719,19 +719,14 @@
     shadow(R.wash, 46, 9); img(R.wash, "wash");
     R.scoop = el("g", { transform: `translate(${HOME.scoop.x},${HOME.scoop.y}) rotate(-4)` }, R.layer);
     shadow(R.scoop, 28, 3); img(R.scoop, "scoop");
-    R.scPile = el("image", { preserveAspectRatio: "xMidYMax meet", href: href("dry-green"), x: 2, y: -13, width: 28, height: 15 }, R.scoop);
-    // 蓋置：開蓋時碗蓋放在這裏，不放在茶盤條柵上
-    R.lidRest = el("g", { transform: `translate(${HOME.lidRest.x},${HOME.lidRest.y})` }, R.layer);
-    el("ellipse", { cx: 0, cy: 3, rx: 29, ry: 8.5, fill: "#000", opacity: 0.28 }, R.lidRest);
-    el("ellipse", { cx: 0, cy: 0, rx: 27, ry: 8, fill: "#34302d" }, R.lidRest);
-    el("ellipse", { cx: 0, cy: -0.8, rx: 20, ry: 5.2, fill: "#45403b" }, R.lidRest);
-    el("ellipse", { cx: 0, cy: -1.2, rx: 27, ry: 8, fill: "none", stroke: "#8a8178", "stroke-opacity": 0.55, "stroke-width": 0.8 }, R.lidRest);
+    R.scPile = el("image", { preserveAspectRatio: "xMidYMax meet", href: href("dry-green"), x: 16, y: -14, width: 24, height: 14 }, R.scoop);
 
     // 蓋碗
     R.saucer = el("g", {}, R.layer);
     shadow(R.saucer, 56, 11); img(R.saucer, "saucer");
-    R.gClosed = el("g", {}, R.layer);
-    img(R.gClosed, "gclosed");
+    // 開蓋時碗蓋斜靠碗托左邊（在碗後面）
+    R.lidLean = el("g", { transform: `translate(${HOME.lidRest.x},${HOME.lidRest.y})` }, R.layer);
+    img(R.lidLean, "lidlean");
     R.gaiwan = el("g", {}, R.layer);
     R.gShadow = el("g", {}, R.gaiwan);
     R.gBowl = el("g", {}, R.gaiwan);
@@ -767,10 +762,7 @@
 
     // 玻璃杯（茶湯在玻璃後面，玻璃高光疊在上面）；杯托只在奉茶時隨杯移動
     R.glassMat = el("g", {}, R.layer);
-    el("ellipse", { cx: 0, cy: 3, rx: 45, ry: 12, fill: "#000", opacity: 0.28 }, R.glassMat);
-    el("ellipse", { cx: 0, cy: 0, rx: 43, ry: 11.5, fill: "#34302d" }, R.glassMat);
-    el("ellipse", { cx: 0, cy: -0.8, rx: 33, ry: 8, fill: "#45403b" }, R.glassMat);
-    el("ellipse", { cx: 0, cy: -1.4, rx: 43, ry: 11.5, fill: "none", stroke: "#8a8178", "stroke-opacity": 0.55, "stroke-width": 0.8 }, R.glassMat);
+    shadow(R.glassMat, 36, 7); el("image", { href: href("mat"), x: g.mat.x * 1.25, y: g.mat.y * 1.25, width: g.mat.w * 1.25, height: g.mat.h * 1.25 }, R.glassMat);
     R.glass = el("g", {}, R.layer);
     R.glassShadow = shadow(R.glass, 34, 7);
     R.gBody = el("g", {}, R.glass);
@@ -814,10 +806,7 @@
     R.cupMats = [];
     HOME.cups.forEach((c) => {
       const sg = el("g", { transform: `translate(${c.x},${c.y})` }, R.layer);
-      el("ellipse", { cx: 0, cy: 3, rx: 37, ry: 11, fill: "#000", opacity: 0.28 }, sg);
-      el("ellipse", { cx: 0, cy: 0, rx: 35, ry: 10.5, fill: "#34302d" }, sg);
-      el("ellipse", { cx: 0, cy: -0.8, rx: 26, ry: 7, fill: "#45403b" }, sg);
-      el("ellipse", { cx: 0, cy: -1.4, rx: 35, ry: 10.5, fill: "none", stroke: "#8a8178", "stroke-opacity": 0.55, "stroke-width": 0.8 }, sg);
+      shadow(sg, 30, 6); img(sg, "mat");
       R.cupMats.push(sg);
     });
     R.cups = HOME.cups.map(() => {
@@ -855,7 +844,7 @@
     shadow(R.cake, 62, 12);
     el("image", { href: `${IMG}${style}/cake.webp`, x: -62, y: -84, width: 124, height: 87, preserveAspectRatio: "xMidYMax meet" }, R.cake);
     R.knife = el("g", {}, R.layer);
-    el("image", { href: `${IMG}${style}/knife.webp`, x: 0, y: -67, width: 70, height: 67, preserveAspectRatio: "xMidYMid meet" }, R.knife);
+    el("image", { href: `${IMG}${style}/knife.webp`, x: 0, y: -5, width: 78, height: 10.5 }, R.knife);
     R.chunk = el("g", {}, R.layer);
     el("ellipse", { cx: 0, cy: 0, rx: 7, ry: 4.5, fill: "#4f3b27" }, R.chunk);
     el("ellipse", { cx: -1.5, cy: -1.2, rx: 4, ry: 2.2, fill: "#7a6444", opacity: 0.8 }, R.chunk);
@@ -1028,8 +1017,6 @@
     appear(R.holder, 4);
     appear(R.wash, 3);
     appear(R.scoop, 5);
-    appear(R.lidRest, 2);
-    R.lidRest.style.display = glass ? "none" : "";
     R.scoop.setAttribute("transform", `translate(${HOME.scoop.x + s.scX},${HOME.scoop.y + s.scY}) rotate(${-4 + s.scR})`);
     R.scPile.style.opacity = Math.min(1, s.scL);
     R.glassMat.style.display = glass ? "" : "none";
@@ -1056,18 +1043,14 @@
     R.gLiquidDepth.style.opacity = lv > 0.02 ? Math.min(1, s.gTint) : 0;
     R.gLiquid.setAttribute("fill", tint(s.gTint));
     const lk = s.lid;
-    const lidOn = { x: br.cx + s.lidX - 4 * s.lidGap * gdir, y: br.cy + 1 - 0.6 * s.lidGap, r: s.lidR - 5 * s.lidGap * gdir }, lidOff = { x: HOME.lidRest.x - HOME.gaiwan.x, y: HOME.lidRest.y - HOME.gaiwan.y - 2, r: -4 };
+    const lidOn = { x: br.cx + s.lidX - 4 * s.lidGap * gdir, y: br.cy + 1 - 0.6 * s.lidGap, r: s.lidR - 5 * s.lidGap * gdir }, lidOff = { x: HOME.lidRest.x - HOME.gaiwan.x, y: HOME.lidRest.y - HOME.gaiwan.y - 12, r: -22 };
     R.lid.setAttribute("transform", `translate(${lerp(lidOff.x, lidOn.x, lk)},${lerp(lidOff.y, lidOn.y, lk) - Math.sin(Math.PI * lk) * 24}) rotate(${lerp(lidOff.r, lidOn.r, lk)})`);
     R.gFront.style.display = lk > 0.6 ? "" : "none";
     R.gHand.style.display = "none";
-    const closed = !glass && lk > 0.99 && s.lidGap < 0.02 && Math.abs(s.lidX) < 0.05 && Math.abs(s.lidR) < 0.05 && Math.abs(s.gr) < 0.05 && Math.abs(s.gx) < 0.05 && Math.abs(s.gy) < 0.05;
-    const ck = R.closedK = quiet || R.closedK == null ? (closed ? 1 : 0) : (R.closedK || 0) + ((closed ? 1 : 0) - (R.closedK || 0)) * (1 - Math.exp(-Math.max(dt, 0.001) / 0.07));
-    const gOp = +R.gaiwan.style.opacity;
-    R.gClosed.setAttribute("transform", `translate(${HOME.gaiwan.x},${HOME.gaiwan.y + gOff})`);
-    R.gClosed.style.opacity = (gOp * ck).toFixed(3);
-    R.gClosed.style.display = ck > 0.01 && !glass ? "" : "none";
-    R.saucer.style.display = glass || ck > 0.99 ? "none" : "";
-    R.gaiwan.style.display = glass || ck > 0.99 ? "none" : "";
+    R.lidImg.style.opacity = Math.min(1, Math.max(0, (lk - 0.03) / 0.2)).toFixed(3);
+    R.lidLean.style.opacity = (+R.gaiwan.style.opacity * (1 - Math.min(1, lk / 0.2))).toFixed(3);
+    R.lidLean.style.display = glass || lk > 0.2 ? "none" : "";
+    R.saucer.style.display = glass ? "none" : "";
     if (!glass && s.lidGap > 0.5 && s.gy < -30) emit.push({ k: "gar", type: "steam", x: HOME.gaiwan.x + s.gx + br.cx, y: HOME.gaiwan.y + s.gy + br.cy - 6, rate: 2.4, spread: br.rx * 0.6, lift: 0.7, alpha: 0.22 });
     if (!glass && lk < 0.5 && lv > 0.15) emit.push({ k: "gst", type: "steam", x: HOME.gaiwan.x + s.gx + br.cx, y: HOME.gaiwan.y + s.gy + br.cy - 4, rate: 3.2, spread: br.rx, lift: 0.8, alpha: 0.35 });
 
@@ -1312,12 +1295,9 @@
 
   /* ---------- 對外介面 ---------- */
   const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const styleListeners = [];
-  const store = { get() { try { return localStorage.getItem("tea-style"); } catch (e) { return null; } }, set(v) { try { localStorage.setItem("tea-style", v); } catch (e) {} } };
-  let GLOBAL_STYLE = store.get() === "I" ? "I" : "R";
 
   function createStage(svg, opts = {}) {
-    let style = GLOBAL_STYLE;
+    const style = "I";
     let R = null, tea = null, clip = null, clipId = null, t = 0, playing = false, last = 0, raf = 0, speed = 1, visible = true, ready = false, idleTick = 0, idleSince = 0, hand = null, idleDt = 0, frozenNow = 0, dirty = true;
     const wrap = svg.parentNode;
     const mk = (tag, cls, html) => { const n = document.createElement(tag); n.className = cls; if (html) n.innerHTML = html; wrap.appendChild(n); return n; };
@@ -1399,8 +1379,6 @@
     }
     const onVis = () => { if (!document.hidden) kick(); };
     document.addEventListener("visibilitychange", onVis);
-    const onStyle = (st) => { if (st !== style) { style = st; boot(); } };
-    styleListeners.push(onStyle);
     const booted = boot();
     return {
       load(newTea, id, autoplay, handInfo) {
@@ -1428,18 +1406,10 @@
         cancelAnimationFrame(raf); playing = false; opts.onIdle && opts.onIdle();
         if (vio) vio.disconnect();
         document.removeEventListener("visibilitychange", onVis);
-        const k = styleListeners.indexOf(onStyle); if (k >= 0) styleListeners.splice(k, 1);
         [hudTemp, hudTimer, handBox, note].forEach((n) => n.remove());
       }
     };
   }
 
-  function setStyle(st) {
-    st = st === "I" ? "I" : "R";
-    if (st === GLOBAL_STYLE) return;
-    GLOBAL_STYLE = st; store.set(st);
-    styleListeners.forEach((fn) => fn(st));
-  }
-
-  window.TeaStage = { createStage, buildClip, setStyle, getStyle: () => GLOBAL_STYLE, _dbg: () => ({ L, HOME, R: window.__R }) };
+  window.TeaStage = { createStage, buildClip, _dbg: () => ({ L, HOME, R: window.__R }) };
 })();

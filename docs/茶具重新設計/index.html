@@ -1,0 +1,30 @@
+<!doctype html><html lang="zh-HK"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
+<title>茶具重新設計｜繪本版設計稿</title>
+<style>
+:root{--ink:#3b2a20;--mut:#6f5a4b;--pa:#f6efe3;--card:#fffaf1;--line:#e3d5bf;--ac:#8c5a2b}
+*{box-sizing:border-box}body{margin:0;background:var(--pa);color:var(--ink);font:17px/1.7 "Noto Serif TC","Noto Serif CJK TC","Songti TC",serif}
+main{max-width:1120px;margin:auto;padding:40px 20px 72px}h1{font-size:34px;line-height:1.3;margin:0 0 8px;letter-spacing:.04em}
+h2{font-size:23px;margin:52px 0 6px;letter-spacing:.03em}p{margin:0 0 16px;color:var(--mut)}
+img{display:block;max-width:100%;height:auto}.hero{border-radius:10px;width:100%;box-shadow:0 8px 28px #5a3a1c30}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}figure{margin:0}figcaption{font-size:15px;color:var(--mut);padding-top:8px}.two img{width:100%;border-radius:8px}
+.grid{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}.it{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 8px 8px;text-align:center}
+.it div{height:116px;display:flex;align-items:center;justify-content:center}.it img{max-height:112px;max-width:100%;width:auto}.it span{font-size:15px;display:block;padding-top:6px}
+.cmp{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}.cmp .it div{height:90px}.cmp .it img{max-height:86px}
+.lab{font-size:15px;color:var(--ac);margin:14px 0 6px}
+@media(max-width:760px){h1{font-size:28px}main{padding-top:28px}.two{grid-template-columns:1fr}.grid,.cmp{grid-template-columns:repeat(3,1fr);gap:8px}.it div{height:92px}.it img{max-height:88px}}
+</style></head><body><main>
+<h1>茶具重新設計・繪本版</h1><p>設計稿，動畫尚未改動。全部器具按人物圖重新畫過，同一種手繪筆法。</p>
+<h2>茶席示意</h2><p>茶盤闊度縮至原來八成，全部茶具放大一成，枱面器具隨茶盤向中間收窄。茶盤邊框也薄了，更接近人物圖。</p>
+<img class="hero" src="img/mock.webp" width="1600" height="1000" alt="新比例茶席示意圖：較細的茶盤上有蓋碗和公道杯，碗蓋斜靠碗托左邊，前方三隻品茗杯，左邊煮水壺、茶巾、水洗，右邊茶荷、茶筒、茶夾和茶撥">
+<h2>比例對照</h2><p>以碗托佔茶盤闊度計算：人物圖 19%，舊稿 15%，建議版 20%。公道杯用同一方法量，人物圖 17%，建議版 18%。</p>
+<div class="two"><figure><img src="img/mock-old.webp" width="1600" height="1000" alt="舊比例：茶盤很闊，茶具顯得細小"><figcaption>舊稿：碗托佔茶盤 15%</figcaption></figure><figure><img src="img/mock-b.webp" width="1600" height="1000" alt="折衷比例：茶盤稍大，茶具稍細"><figcaption>另一選擇：茶盤縮至 87%，碗托佔 17%</figcaption></figure></div>
+<h2>碗蓋擺位</h2><p>開蓋後，碗蓋斜靠在碗托左邊，蓋鈕朝左上，取消之前多加的蓋置。</p>
+<div class="two"><figure><img src="img/lid-scene.webp" width="1120" height="560" alt="人物圖中碗蓋斜靠碗托的特寫"><figcaption>人物圖（參考）</figcaption></figure><figure><img src="img/lid-new.webp" width="1120" height="560" alt="新繪本蓋碗，碗蓋斜靠碗托的特寫"><figcaption>新設計</figcaption></figure></div>
+<h2>全套茶具</h2><div class="grid" id="g"></div>
+<h2>新舊對照</h2><p class="lab">舊版</p><div class="cmp" id="o"></div><p class="lab">新版</p><div class="cmp" id="n"></div>
+</main><script>
+const A=[["gclosed","蓋碗（合蓋）"],["bowl","碗"],["saucer","碗托"],["lid","碗蓋"],["lidlean","碗蓋（斜靠）"],["cupmat","品茗杯連杯墊"],["pitcher","公道杯"],["tumbler","玻璃杯"],["kettle","煮水壺"],["stove","炭爐"],["wash","水洗"],["towel","茶巾"],["chahe","茶荷"],["holder","茶筒"],["tongs","茶夾"],["pick","茶撥"],["scoop","茶則"],["cake","普洱茶餅"],["knife","茶刀"]];
+const C=[["gclosed","蓋碗"],["pitcher","公道杯"],["wash","水洗"],["stove","炭爐"],["chahe","茶荷"],["towel","茶巾"]];
+const t=(s,n)=>`<div class="it"><div><img src="img/${s}.webp" alt="${n}" loading="lazy"></div><span>${n}</span></div>`;
+g.innerHTML=A.map(a=>t(a[0],a[1])).join("");o.innerHTML=C.map(a=>t("old-"+a[0],a[1])).join("");n.innerHTML=C.map(a=>t(a[0],a[1])).join("");
+</script></body></html>
