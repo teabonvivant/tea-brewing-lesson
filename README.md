@@ -206,3 +206,14 @@ Oliver 認為手部看起來奇怪，動畫中的手（ghand／phand／chand）�
 - 合蓋不再用整件 `gclosed` 圖：它的碗比例與分件不同，切換會跳；現由碗托＋碗＋碗蓋分件組成。斜靠碗蓋是 `lidlean`，在碗後面，與平放碗蓋在開合時淡入淡出。
 - 擺位在 `stage.js` 的 `HOME`；杯墊、玻璃杯托改用 `mat` 圖。「茶席插花」卡仍是舊繪本圖 `kit/I/vase.webp`。
 - 測試：`e2e_layout`（茶盤 50–56%）、`e2e_real`（斜靠碗蓋）及其餘 7 套已改為只測繪本。
+
+## 第十九輪（2026-10-31）續泡、收具、水洗、茶巾（資源版本 `20261031c`）
+
+- **續泡與收具分開**：`again` 加出湯、續斟、飲至味淡；新步驟 `clear`（收具），蓋碗約 26 秒、玻璃杯約 12 秒。步驟數因此加一。
+- **水洗**：狀態 `wl`（水位）、`wlT`（茶色）、`wlD`（葉底）跨步累積，`buildClip` 按步驟位置定起始值，數值在 `WASH`。
+- **茶巾**：`twX/twY/twS`；`kettlePour` 的 `dab` 選項令壺回位蘸巾（只在溫杯第一次注水）。潤茶蘸巾待唐老師確認，未做。
+- **其他**：`tongCup`、`glassDump` 共用；`fsrc` 2＝葉底由蓋碗落水洗、3＝由玻璃杯落水洗；玻璃杯高度 ×0.8（`geometry`，圖片要 `preserveAspectRatio: none`）；布具按壺爐→蓋碗→公道杯→杯→水洗→茶巾→茶荷→茶道組→茶則，杯墊隨杯淡入。
+- **背景**：`kit/I/bg.webp` 加竹編茶席（Codex 改圖，舊圖 `_work/gen19/bg_old.webp`）。
+- **人物圖**：新 `tongcup`、`clearup`、`clearup-g`，重生 `pourHigh`、`scoop`（`_work/gen19/run.py`）；其餘人物圖不動，以免影響 Oliver 已確認的擺位。
+- 測試：`_work/tools/e2e_round19.py`；全部一次跑 `bash _work/gen19/all.sh`。
+
